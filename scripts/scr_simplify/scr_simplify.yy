@@ -1,0 +1,13 @@
+{
+  "$GMScript":"",
+  "%Name":"scr_simplify",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_simplify",
+  "parent":{
+    "name":"paths",
+    "path":"folders/Scripts/paths.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

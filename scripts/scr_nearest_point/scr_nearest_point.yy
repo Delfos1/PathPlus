@@ -1,0 +1,13 @@
+{
+  "$GMScript":"",
+  "%Name":"scr_nearest_point",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_nearest_point",
+  "parent":{
+    "name":"paths",
+    "path":"folders/Scripts/paths.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
