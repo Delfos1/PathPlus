@@ -1,0 +1,13 @@
+{
+  "$GMScript":"",
+  "%Name":"scr_export_path",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_export_path",
+  "parent":{
+    "name":"paths",
+    "path":"folders/Scripts/paths.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

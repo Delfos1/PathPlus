@@ -1,0 +1,13 @@
+{
+  "$GMScript":"",
+  "%Name":"scr_Lasso_Selection",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_Lasso_Selection",
+  "parent":{
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

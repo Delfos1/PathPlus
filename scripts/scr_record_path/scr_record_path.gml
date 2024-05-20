@@ -72,7 +72,7 @@ return _pathPlus
 	
 function PathRecordingDraw(){	
 	if PathRecord.l	== -1 return false
-	PathRecord.rec.Draw(x,y,false)
+	PathRecord.rec.DebugDraw(x,y,false)
 	return
 }  
 
