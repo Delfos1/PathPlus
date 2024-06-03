@@ -55,9 +55,21 @@ function PathPlus(_path = []) constructor
 				polyline[0].cached = false
 			}
 		}
-		
+		switch(type){
+			
+			case PATHPLUS.CATMULL_ROM:
+			
+			__catmull_rom_set()
+			
+			break
+			case PATHPLUS.BEZIER:
+			
+			__bezier_set(n-2,n)
+			
+			break
+		}
 		_cache_gen  =	false
-		
+		//__generate_cache()
 		return self
 	}
 	/// Inserts a point to the polyline at the n position
@@ -80,13 +92,14 @@ function PathPlus(_path = []) constructor
 			array_insert(cache,_i,0)
 			_i++
 		}
+		
 		_cache_gen  =	false
 		
 		switch(type){
 			
 			case PATHPLUS.CATMULL_ROM:
 			
-			__catmull_rom_set(_properties.alpha, _properties.tension,min(n-2,0),max(n+2,l))
+			__catmull_rom_set()
 			
 			break
 			case PATHPLUS.BEZIER:
@@ -95,48 +108,129 @@ function PathPlus(_path = []) constructor
 			
 			break
 		}
-		__generate_cache()
+		//__generate_cache()
 
 		
 		
 		return self
 	}
 	/// Removes the point on the polyline at the n position
-	static RemovePoints	= function(n,_amount = 1) 
+	static RemovePoint	= function(n,_amount = 1) 
 	{
-		l--
+		n = min(n,l-1)
+		
+		if closed
+		{
+			var _prev = n==0 ? l-1 : n-1
+			var _prev2 = n==0 ? l-2 : n-2
+			var _next = n==l-1 ? 0 : n+1
+			var _next2 = n==l-2 ? 1 : n+2
+		}
+		else
+		{
+			var _prev = max(0,n-1)
+			var _prev2 = max(0,n-2)
+			var _next = min(l-1,n+1)
+			var _next2 = min(l-1,n+2)
+		}
+			polyline[_prev].cached		= false
+			polyline[_next].cached		= false
+			polyline[n].cached		= false
+			_cache_gen  =	false
+			
+		l-=_amount
 		array_delete(polyline,n,_amount)
 		_cache_gen  =	false
 		
+		if type == PATHPLUS.CATMULL_ROM 
+		{
+			__catmull_rom_set()
+		}		
+		var _i = n*precision
+
+		array_delete(cache,_i,_amount*precision)
+
+		//__generate_cache()
 		return self
 	}
 	/// Changes the point on the polyline at the n position
-	static ChangePoint	= function(n,_x,_y,_optional_vars = {}) 
+	static ChangePoint	= function(n,_x,_y) 
 	{
+		n = clamp(n,0,l-1)
+		var	_prevx = polyline[n].x		,
+			_prevy = polyline[n].y		
 		polyline[n].x		= _x
 		polyline[n].y		= _y
 		polyline[n].cached	= false
 		
 		if closed
 		{
-			var _prev = n==0 ? l-1 : n-1
+			var _prev = n-1<0 ? l-1 : n-1
+			var _prev2 = n-2<0 ? l-2 : n-2
 			var _next = n==l-1 ? 0 : n+1
+			var _next2 = n>=l-2 ? n-(l-2) : n+2
 		}
 		else
 		{
 			var _prev = max(0,n-1)
+			var _prev2 = max(0,n-2)
 			var _next = min(l-1,n+1)
+			var _next2 = min(l-2,n+2)
 		}
 			polyline[_prev].cached		= false
 			polyline[_next].cached		= false
 		_cache_gen  =	false
-		__generate_cache()
+		
+		switch(type){
+			
+			case PATHPLUS.CATMULL_ROM:
+				__catmull_rom_set()
+			break
+			case PATHPLUS.BEZIER:
+			
+					var _first_handle = polyline[n][$"h1"] ?? polyline[n][$"h2"]
+					var _other_handle = _first_handle == polyline[n][$"h1"]  ? polyline[n][$"h2"] : undefined
+					if _first_handle == undefined break;
+		
+		
+					_first_handle.x += (_x-_prevx)
+					_first_handle.y += (_y-_prevy)
+		
+
+					if _other_handle != undefined 
+					{
+						/*
+						var _angle = point_direction(polyline[n].x, polyline[n].y, _first_handle.x,_first_handle.y)+180
+						var _length = 	point_distance(_prevx, _prevy, _other_handle.x,_other_handle.y) ;
+						_other_handle.x =  polyline[n].x+lengthdir_x(_length,_angle)
+						_other_handle.y =  polyline[n].y+lengthdir_y(_length,_angle)*/
+						_other_handle.x += (_x-_prevx)
+						_other_handle.y += (_y-_prevy)
+					}
+			
+			break
+		}
+		
+		//__generate_cache()
 		return self
 	}
-	/// Changes a single variable within a point
+	/// Translates the n point on the polyline relative to its current position
+	static TranslatePoint	= function(n,_x,_y) 
+	{
+		n = clamp(n,0,l-1)
+		_x += polyline[n].x				
+		_y += polyline[n].y		
+	
+		ChangePoint(n,_x,_y)
+
+		return self
+	}
+	/// Changes a single variable within a point. To be used with user amde variables. For PathPlus variables use the proper getters
 	static ChangePointVariable	= function(n,_var_as_string,_new_value) 
 	{
-		if !struct_exists(polyline[n],_var_as_string) return
+		if _var_as_string == "x" || _var_as_string == "y" || _var_as_string == "h1" || _var_as_string == "h2" || _var_as_string == "weight" return self
+		if !struct_exists(polyline[n],_var_as_string) return self
+		
 		polyline[n][$ _var_as_string] = _new_value
 		polyline[n].cached	= false
 		_cache_gen  =	false
@@ -147,7 +241,7 @@ function PathPlus(_path = []) constructor
 	//simplify
 	//closest point on path
 	#endregion
-	#region Path Basics
+	#region Path Wrappers
 	
 	static PathAddPoint		= function(x,y,speed=100)
 	{
@@ -235,16 +329,16 @@ function PathPlus(_path = []) constructor
 	{
 		if type != PATHPLUS.BEZIER return;
 		
-		var _first_handle = true ? polyline[_n][$"h1"] : polyline[_n][$"h2"]
+		var _first_handle = _handle == true ? polyline[_n][$"h1"] : polyline[_n][$"h2"]
 		var _other_handle = _handle == true ? polyline[_n][$"h2"] : polyline[_n][$"h1"]
 		if _first_handle == undefined return;
+		
 		
 		_first_handle.x = x
 		_first_handle.y = y
 		
-		if _other_handle == undefined return;
-		
-		if !_break
+
+		if _other_handle != undefined  && !_break
 		{
 			var _angle = point_direction(polyline[_n].x, polyline[_n].y, _first_handle.x,_first_handle.y)+180
 			var _length = _symmetric ? 
@@ -254,6 +348,8 @@ function PathPlus(_path = []) constructor
 			_other_handle.y =  polyline[_n].y+lengthdir_y(_length,_angle)
 		}
 		_cache_gen  =	false
+		 polyline[max(0,(_n-1))].cached = false
+		 polyline[_n].cached = false
 		__generate_cache()
 		return self
 	}
@@ -284,9 +380,8 @@ function PathPlus(_path = []) constructor
 	static TranslateBezierHandle = function(_n,x,y,_handle=true,_break = false,_symmetric = true)
 	{
 		if type != PATHPLUS.BEZIER return
-		
-		var _first_handle = true ? polyline[_n][$"h1"] : polyline[_n][$"h2"]
-		var _other_handle = _handle == true ? polyline[_n][$"h2"] : polyline[_n][$"h1"]
+
+		var _first_handle = _handle == true ? polyline[_n][$"h1"] : polyline[_n][$"h2"]
 		if _first_handle == undefined return;
 		
 		 x = _first_handle.x + x
@@ -306,7 +401,7 @@ function PathPlus(_path = []) constructor
 	{
 		if type != PATHPLUS.BEZIER return;
 		
-		var _first_handle = true ? polyline[_n][$"h1"] : polyline[_n][$"h2"]
+		var _first_handle = _handle == true ? polyline[_n][$"h1"] : polyline[_n][$"h2"]
 		var _other_handle = _handle == true ? polyline[_n][$"h2"] : polyline[_n][$"h1"]
 		if _first_handle == undefined return;
 		
@@ -349,84 +444,138 @@ function PathPlus(_path = []) constructor
 	// RotateHandle
 	//Stretch handle
 	#endregion
+	#region B-Spline Functions
+		static ChangePointWeight = function(n,_weight) 
+	{
+		if type != PATHPLUS.B_SPLINE return;
+		polyline[n].weight = _weight
+		polyline[n].cached	= false
+		_cache_gen  =	false
+		__generate_cache()
+	}
+	#endregion
+
+	static ChangeSpeedFalloff = function(n,_speed,_falloff = 0.2)
+	{
+		
+		
+	}
+	/// Export a .yy file with the contents of the cache polyline. You need to overwrite an existing path in your GameMaker project for it to work.
+	/// Recommended that you simplify the result before exporting to avoid redundant information
+	static Export = function(){
+
+	show_message("Warning : You must replace an already existing path in your Game Maker project")
+
+	var file;
+	file = get_save_filename("*.yy", "path");
+	if (file != "")
+	{
+		var _path = path ,
+		 _closed = path_get_closed(_path)? "\"closed\":true," :"\"closed\":false,",
+		 _kind = "\"kind\":" + string(path_get_kind(_path)) + ",",
+		 _precision = "\"precision\":" + string(path_get_precision(_path)) + ",",
+		 _stringy = json_stringify(cache),
+		_name = filename_name(file) 
+		_name = string_delete(_name , string_length(_name)-2,3) 
+		var _pre = "{ \"$GMPath\":\"\",  \"%Name\":\"" +_name + "\"," +_closed + _kind + _precision + "  \"name\":\"" +_name + "\"," +  "\"parent\":{    \"name\":\"Paths\",    \"path\":\"folders/Paths.yy\",  },\"points\":"
+		var _post = ", \"resourceType\":\"GMPath\",  \"resourceVersion\":\"2.0\",}"
+		_stringy = string_concat(_pre,_stringy,_post)
+		var _buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
 	
-	// Speed changer functions
+		buffer_write(_buff, buffer_text, _stringy);
+		buffer_save(_buff, file);
+		buffer_delete(_buff);
+	}
+}
 	
 	static Reset	= function()
 	{
 		polyline = [];
 		_cache_gen  =	false
 	}
-	/// Draws either a path, a polyline or its cached version
-	static DebugDraw		= function(x,y,_path=false,_override_type=false)
+	/// Draws either a path, a polyline or its cached version.
+	/// @param {Real}   _x		Drawing offset
+	/// @param {Real}   _y		Drawing offset
+	/// @param {Bool}   _points Whether to draw control points or not
+	/// @param {Bool}  _path	Whether to draw the path element or the polyline/cache element
+	/// @param {Bool}  _force_poly	Whether to display the interpolated line(false) or base polyline (true)
+	static DebugDraw		= function(_x=0,_y=0,_points=false,_path=false,_force_poly=false)
 	{
 		if _path
 		{
 			draw_path(path,x,y,true)
 			return
 		}
-		var _lines = type == PATHPLUS.LINEAR || _override_type ? polyline : cache
+		var _lines = type == PATHPLUS.LINEAR || _force_poly ? polyline : cache
 		
 		var _c1 = draw_get_color()
 		var _len = array_length(_lines)
 		
 		for(var _i=0; _i<_len;_i++)
 		{
-			draw_set_color(c_white)
+			draw_set_color(COLOR_LINE)
 			if closed && _i + 1 == _len
 			{
-				draw_line(_lines[_i].x,_lines[_i].y,_lines[0].x,_lines[0].y)
+				draw_line(_x+_lines[_i].x,_y+_lines[_i].y,_x+_lines[0].x,_y+_lines[0].y)
 			}
 			else if _i + 1 < _len
 			{
-				draw_line(_lines[_i].x,_lines[_i].y,_lines[_i+1].x,_lines[_i+1].y)
+				draw_line(_x+_lines[_i].x,_y+_lines[_i].y,_x+_lines[_i+1].x,_y+_lines[_i+1].y)
 			}
-			draw_set_color(c_aqua)
-			draw_circle(_lines[_i].x,_lines[_i].y,2,false)
+			if _points
+			{
+				draw_set_color(COLOR_INTR)
+				draw_circle(_x+_lines[_i].x,_y+_lines[_i].y,2,false)
+			}
 		}
-		var _lines = polyline
-		draw_set_color(c_red)
-		for(var _i=0; _i<array_length(_lines);_i++)
+		if _points
 		{
-			draw_circle(_lines[_i].x,_lines[_i].y,3,false)
-		}
-		if type == PATHPLUS.BEZIER
-		{
-			draw_set_color(c_fuchsia)
+			var _lines = polyline
+			draw_set_color(COLOR_PT)
 			for(var _i=0; _i<array_length(_lines);_i++)
 			{
-				if _lines[_i][$"h1"] != undefined
+				draw_circle(_x+_lines[_i].x,_y+_lines[_i].y,3,false)
+			}
+			if type == PATHPLUS.BEZIER 
+			{
+				draw_set_color(COLOR_BEZ)
+				for(var _i=0; _i<array_length(_lines);_i++)
 				{
-					draw_circle(_lines[_i].h1.x,_lines[_i].h1.y,2,false)
-					draw_line(_lines[_i].h1.x,_lines[_i].h1.y,_lines[_i].x,_lines[_i].y)
-				}
-				if _lines[_i][$"h2"] != undefined
-				{
-					draw_circle(_lines[_i].h2.x,_lines[_i].h2.y,2,false)
-					draw_line(_lines[_i].h2.x,_lines[_i].h2.y,_lines[_i].x,_lines[_i].y)
-				}
-			}	
+					if _lines[_i][$"h1"] != undefined
+					{
+						draw_circle(_x+_lines[_i].h1.x,_y+_lines[_i].h1.y,2,false)
+						draw_line(_x+_lines[_i].h1.x,_y+_lines[_i].h1.y,_x+_lines[_i].x,_y+_lines[_i].y)
+					}
+					if _lines[_i][$"h2"] != undefined
+					{
+						draw_circle(_x+_lines[_i].h2.x,_y+_lines[_i].h2.y,2,false)
+						draw_line(_x+_lines[_i].h2.x,_y+_lines[_i].h2.y,_x+_lines[_i].x,_y+_lines[_i].y)
+					}
+				}	
+			}
 		}
-		
 		draw_set_color(_c1)
 	}
+	
 	static __generate_cache	= function()
 	{
 		if type == PATHPLUS.LINEAR || _cache_gen return
 		
 		var _t = 1/precision 
+
+		
 		for (var _i= 0, _n = 0 ; _i < l; _i+=_t )
 		{ 
-			if polyline[floor(_i)].cached == true
+			/*if polyline[floor(_i)].cached == true
 			{
 				_n++
 				continue
-			}
+			}*/
 			switch(type)
 			{
 				case PATHPLUS.BEZIER:
-						var _point =	__bezier_point(polyline[floor(_i)],polyline[floor(_i+1)%l],frac(_i))
-				break
+						var _point =	__bezier_point(polyline[floor(_i)],polyline[floor(_i+1)%(l-1)],frac(_i))
+				break;
 				case PATHPLUS.CATMULL_ROM:
 						if polyline[floor(_i)][$"segment"] == undefined 
 						{
@@ -436,12 +585,19 @@ function PathPlus(_path = []) constructor
 						{
 							var _point =	__catmull_rom_point(polyline[floor(_i)].segment,frac(_i))
 						}
+				break;
+				case PATHPLUS.B_SPLINE:
+						var _point = __rational_bspline_point(_i)
 				break
 			}
 			
 			if polyline[floor(_i)][$ "speed"] != undefined && polyline[floor(_i+1)%l][$ "speed"] != undefined 
 			{
 				_point.speed = lerp(polyline[floor(_i)].speed,polyline[floor(_i+1)%l].speed,frac(_i))
+			}
+			else
+			{
+				_point.speed = 100
 			}
 					
 			cache[_n]= _point
@@ -463,6 +619,7 @@ function PathPlus(_path = []) constructor
 		switch(type)
 		{
 			case PATHPLUS.LINEAR:
+			_point = { x : lerp(polyline[floor(_t)].x,polyline[ceil(_t)].x,frac(_t)), y : lerp(polyline[floor(_t)].y,polyline[ceil(_t)].y,frac(_t))}
 			break;
 			case PATHPLUS.BEZIER:
 			{
@@ -471,6 +628,7 @@ function PathPlus(_path = []) constructor
 			}
 			case PATHPLUS.B_SPLINE:
 			{
+				var _point = __rational_bspline_point(_t)
 				break;
 			}
 			case PATHPLUS.CATMULL_ROM:
@@ -522,7 +680,7 @@ function PathPlus(_path = []) constructor
 	}
 	
 	#region Catmull-Rom
-		static SetCatmullRom = function(_alpha=.5,_tension=0.5)
+		static SetCatmullRom = function(_alpha=.5,_tension=.5)
 		{
 			_alpha		= clamp(_alpha,0,1)
 			_tension	= clamp(_tension,0,1)
@@ -530,11 +688,18 @@ function PathPlus(_path = []) constructor
 			type		= PATHPLUS.CATMULL_ROM
 			cache= []
 			
-			__catmull_rom_set(_properties.alpha,_properties.tension,0,l)
+			__catmull_rom_set()
 			__generate_cache()
 		}
-		static  __catmull_rom_set = function(_alpha,_tension,_start = 0 , _end = l)
+		static  __catmull_rom_set = function(_start = 0 , _end = l)
 		{
+			var _alpha		= _properties.alpha,
+				_tension	= _properties.tension
+				
+			if _start < 0
+			{
+				 _start = closed ? l-_start : 0
+			}
 			if _end == l
 			{
 				var _length = closed ? l : l-1
@@ -822,7 +987,7 @@ function PathPlus(_path = []) constructor
 		}
 		static  __bezier_point = function(p1,p2,t)
 		{
-			if p1[$ "h1"] == undefined
+			if p1[$ "h1"]  == undefined || p2[$ "h2"] == undefined
 			{
 				return p1
 			}
@@ -841,7 +1006,136 @@ function PathPlus(_path = []) constructor
 		}	
 	#endregion
 	
-	static SetBSpline = function()
-		{}
+	#region B_Spline
+	
+	/// Setting the curve as a B-Spline adds a "weight" variable to every point in the polyline, a degree property to the curve and an array with knot vectors.
+	/// Changing the degree determines how smooth the curve will be. 1 =  straight lines, 5 = max smoothness. 2-3 is recommended.
+	static SetBSpline = function(smoothness=3)
+	{
+		type = PATHPLUS.B_SPLINE
+		var _size = closed ? l*precision : ((l-1)*precision)+1
+		
+		cache= array_create(_size,0)
+		_cache_gen  =	false
+		_properties.degree = clamp(round(smoothness),1,5)
+		
+		for(var _i = 0; _i < l; _i++)
+		{
+			polyline[_i].weight = 1
+		}
+		__bspline_construct_knot_vector()
+		__generate_cache()
+		
+		return self
+	}
 
+	static __bspline_construct_knot_vector	= function() 
+	{
+		var p = _properties.degree,
+			n = l-1,
+			m = n + p + 1;
+	    _properties.knots = [];
+    
+		if !closed
+		{
+		    // First p+1 knots are 0
+		    for (var i = 0; i <= p; i++) {
+		        array_push(_properties.knots, 0);
+		    }
+    
+		    // Middle knots are uniformly spaced
+		    for (var i = 1; i <= n - p; i++) {
+		        array_push(_properties.knots, i);
+		    }
+    
+		    // Last p+1 knots are the same value
+		    for (var i = 0; i <= p; i++) {
+		        array_push(_properties.knots, n - p + 1);
+			}
+		}
+		else
+		{
+			 for (var i = 0; i <= m; i++) {
+		        array_push(_properties.knots, i);
+		    }
+		}
+	}
+	
+	// Adapted from Kenneth Haugland's code at https://www.codeproject.com/Articles/1095142/Generate-and-understand-NURBS-curves
+	static __rational_bspline_point			= function(t)
+	{
+	    var 
+	   _x = 0,
+	   _y = 0,
+	   rationalWeight = 0
+
+	    for (var  i = 0; i < l; i++)
+	    {
+	         var temp = __bspline_basis(i,t)*polyline[i].weight;
+	        rationalWeight += temp;
+	    }
+
+	    for (var i = 0; i < l; i++)
+	    {
+	        var temp = __bspline_basis(i,t);
+	        _x += polyline[i].x * polyline[i].weight * (temp/rationalWeight);
+	        _y += polyline[i].y * polyline[i].weight * (temp/rationalWeight);
+	    }
+	    return {x: _x, y: _y};
+	}
+	
+	/// "i"Current control pont
+	/// This code is translated from the original C++ code given on page 74-75 in "The NURBS Book" by Les Piegl and Wayne Tiller
+	/// <param name="u">The value of the current curve point. Valid range from 0 <= u <=1 
+	static  __bspline_basis					=function( i, u)
+{
+	var _deg = _properties.degree,
+		_knots = _properties.knots,
+		N = array_create(_deg + 1),
+		_knot_l = array_length(_knots) - 1,
+		saved, temp;
+
+    if ((i == 0 && u == _knots[0]) || (i == (_knot_l - _deg - 1) && u == _knots[_knot_l]))
+        return 1;
+
+    if (u < _knots[i] || u >= _knots[i + _deg + 1])
+        return 0;
+
+    for (var j = 0; j <= _deg; j++)
+    {
+        if (u >= _knots[i + j] && u < _knots[i + j + 1])
+            N[j] = 1;
+        else
+            N[j] = 0;
+    }
+
+    for (var k = 1; k <= _deg; k++)
+    {
+        if (N[0] == 0)
+            saved = 0;
+        else
+            saved = ((u - _knots[i]) * N[0]) / (_knots[i + k] - _knots[i]);
+
+        for (var j = 0; j < _deg - k + 1; j++)
+        {
+            var Uleft = _knots[i + j + 1];
+            var Uright = _knots[i + j + k + 1];
+
+            if (N[j + 1] == 0)
+            {
+                N[j] = saved;
+                saved = 0;
+            }
+            else
+            {
+                temp = N[j + 1] / (Uright - Uleft);
+                N[j] = saved + (Uright - u) * temp;
+                saved = (u - Uleft) * temp;
+            }
+        }
+    }
+    return N[0];
+}
+	
+	#endregion
 }

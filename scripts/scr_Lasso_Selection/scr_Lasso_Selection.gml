@@ -1,45 +1,37 @@
          
 /// Records a polygon to be usde as a lasso selection  
-/// @param {Array}     _selection Array to record the polygon to
 /// @param {Real}		x x coordinate of the new position
 /// @param {Real}		y y coordinate of the new position
 /// @param {Real}		_dis minimum distance required to record a new vertex
 
-function LassoSelection(_selection,x,y,_dis = 10){
+function LassoSelection(x,y,_dis = 10){
 	
-	var _l = array_length(_selection)
+	static rec = new PathPlus() 
+	static active = true
 	
-	if _l == 0
+	active = true
+	if rec.l != 0
 	{
-		array_push(_selection,[x,y])
-		exit
+		var _distance = point_distance(x,y,rec.polyline[rec.l-1].x,rec.polyline[rec.l-1].y) //compare current position to previous 
+		if  _distance < _dis		return
 	}
 	
-	var _d = point_distance(_selection[_l-1][0],_selection[_l-1][1],x,y)
-	
-	if _d >_dis
-	{
-		array_push(_selection,[x,y])
-		exit
-	}
-
+	rec.AddPoint(x,y)
 }
-function LassoDraw(_selection){
+/// Draws the lasso
+function LassoDraw(){
 
-	var _l = array_length(_selection)
+	if !LassoSelection.active { return }
+	LassoSelection.rec.DebugDraw()
 	
-	if _l == 0
-	{ exit }
-	
-	for(var _i=0; _i<_l-1;_i++)
-	{
-		draw_line(_selection[_i][0],_selection[_i][1],_selection[_i+1][0],_selection[_i+1][1])
-	}
+	return
 }
-function LassoEnd(_selection,_collide){
 
-	//Close shape
-	array_push(_selection,_selection[0])
+/// Completes the selection. Provide an instance, an array of instances/objects, or an array of coordinates with the format [id,[x,y],[x,y],etc...] . To collide, half or more of the object needs to be within the lasso shape. It returns an array of ID's or the variable provided in the first array space.
+function LassoEnd(_collide){
+
+	if LassoSelection.rec.l	== 0 ||  !LassoSelection.active  return 
+	
 
 	var _coord =[]
 
@@ -66,7 +58,11 @@ function LassoEnd(_selection,_collide){
 	}
 	else
 	{
-		show_debug_message("Lasso Error: Collide data procided doesnt conform to an array or an object")	
+		show_debug_message("Lasso Error: Collide data provided doesnt conform to an array or an object")	
+		LassoSelection.rec.Reset()
+		LassoSelection.rec.l	=0
+		LassoSelection.active = false
+		return []
 	}
 	#endregion
 	
@@ -78,7 +74,7 @@ function LassoEnd(_selection,_collide){
 		var _found_points = 0
 		for (var _in = 1 ;_in <  array_length(_coord[_i]) ;_in++ )
 		{
-			_found_points = point_in_polygon(_coord[_i][_in][0],_coord[_i][_in][1],_selection) ? _found_points+1 : _found_points
+			_found_points = point_in_polygon(_coord[_i][_in][0],_coord[_i][_in][1],LassoSelection.rec.polyline) ? _found_points+1 : _found_points
 		}
 	
 		if (_found_points >= (array_length(_coord[_i])-1)/2)
@@ -87,38 +83,8 @@ function LassoEnd(_selection,_collide){
 		}
 		
 	}
-		array_resize(_selection,0)
+		LassoSelection.rec.Reset()
+		LassoSelection.rec.l	=0
+		LassoSelection.active = false
 		return _results
-}
-
-///  Returns true if the given test point is inside 
-///  the given 2D polygon, false otherwise.
-///
-///   @param {real} x coordinates of the test point
-///	  @param {real} y coordinates of the test point
-///   @param {array} polygon     array of series of array coordinate pairs defining the shape of a polygon like so: [[x,y],[x,y],...]
-///
-///
-// By XOT, modified by Delfos
-function point_in_polygon(x0,y0,polygon)
-{
-    var inside;
-    var n, i, x1, y1, x2, y2;
-    inside = false;
-	
-    n = array_length(polygon) 
-
-    for (i=0; i<n-1; i+=1)
-    {
-        x1 = polygon[i][0];
-        y1 = polygon[i][1];
-        x2 = polygon[i+1][0];
-        y2 = polygon[i+1][1];
- 
-        if ((y2 > y0) != (y1 > y0)) 
-        {
-            inside ^= (x0 < (x1-x2) * (y0-y2) / (y1-y2) + x2);
-        }       
-    }
-    return inside;
 }

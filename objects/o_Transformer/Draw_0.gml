@@ -1,1 +1,1 @@
-pathplus.DebugDraw(x,y,false)
+pathplus.DebugDraw(0,0,true)

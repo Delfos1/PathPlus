@@ -1,4 +1,5 @@
-
+/// Start recording a path. This will save a polyline with timecode and pixel information.
+/// Necessary to use every step
 function PathRecord(x,y){
 
 	static rec = new PathPlus() 
@@ -10,7 +11,7 @@ function PathRecord(x,y){
 	var _time = (current_time-start_time) ,
 	games
 		_pixels_per_frame = 1
-		if l != -1 
+	if l != -1 
 	{
 		var _distance = point_distance(x,y,rec.polyline[l].x,rec.polyline[l].y) //compare current position to previous 
 		if  _distance < sensitivity		return
@@ -25,6 +26,7 @@ function PathRecord(x,y){
 	return 
 }
 
+/// Stops the path recording and resets 
 function PathRecordStop(_record_speed = true,smooth= true,prec= 8,_closed=false){
 		var _l = PathRecord.l	
 		if _l == -1 return
@@ -71,8 +73,8 @@ return _pathPlus
 }
 	
 function PathRecordingDraw(){	
-	if PathRecord.l	== -1 return false
-	PathRecord.rec.DebugDraw(x,y,false)
+	if PathRecord.l	== -1 return 
+	PathRecord.rec.DebugDraw()
 	return
 }  
 
