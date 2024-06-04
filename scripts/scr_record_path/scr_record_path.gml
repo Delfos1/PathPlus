@@ -27,7 +27,7 @@ function PathRecord(x,y){
 }
 
 /// Stops the path recording and resets 
-function PathRecordStop(_record_speed = true,smooth= true,prec= 8,_closed=false){
+function PathRecordStop(_record_speed = true,smooth= true,prec= 8,_closed=true){
 		var _l = PathRecord.l	
 		if _l == -1 return
 	var _pathPlus =  new PathPlus(PathRecord.rec.polyline)
@@ -72,7 +72,7 @@ return _pathPlus
 	
 }
 	
-function PathRecordingDraw(){	
+function PathRecordDraw(){	
 	if PathRecord.l	== -1 return 
 	PathRecord.rec.DebugDraw()
 	return

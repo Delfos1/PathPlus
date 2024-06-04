@@ -55,11 +55,25 @@ if mouse_mode!= MOUSE_MODE.DRAG &&  mouse_mode!= MOUSE_MODE.LASSO && mouse_mode!
 				hovered_on = undefined
 		}
 	}
-
+	if !_check 
+	{
+		var _l = pathplus.closed ?  array_length(pathplus.cache)-1 :  array_length(pathplus.cache)-1
+		for(var _i=0; _i< _l; _i++)
+		{
+			_check = collision_line(pathplus.cache[_i].x,pathplus.cache[_i].y,pathplus.cache[(_i+1)].x,pathplus.cache[_i+1].y,o_mouse_col,false,false)
+		
+			if _check != noone
+			{
+				mouse_colliding	= MOUSE_COLL.LINE
+				mouse_mode		= MOUSE_MODE.HOVER
+				hovered_on		= _i
+				break
+			} else _check =  undefined
+		}
+	}
 	mouse_mode= _check ? MOUSE_MODE.HOVER : MOUSE_MODE.NORMAL
 	
 	 var _i = 0
-
 }
 
 if input_check_pressed("left_click")
@@ -92,6 +106,15 @@ if input_check_pressed("left_click")
 			mouse_mode = MOUSE_MODE.DRAG
 		}
 	
+	}
+	else if mouse_mode ==  MOUSE_MODE.HOVER && mouse_colliding	== MOUSE_COLL.LINE
+	{
+		if hovered_on != undefined 
+		{
+			pathplus.InsertPoint(ceil(hovered_on/pathplus.precision),mouse_x,mouse_y)
+			RemakeSelectablePoints()
+			hovered_on = undefined
+		}
 	}
 	else if mouse_mode== MOUSE_MODE.ADD
 	{
@@ -182,6 +205,7 @@ case MOUSE_MODE.HOVER :
 	if mouse_colliding == MOUSE_COLL.LINE {mouse_sprite = spr_hand_point_ol}
 	else if mouse_colliding == MOUSE_COLL.POINT {mouse_sprite = spr_hand_open_ol}
 	else if mouse_colliding == MOUSE_COLL.HANDLE {mouse_sprite = spr_hand_open_ol}
+	else if mouse_colliding == MOUSE_COLL.LINE {mouse_sprite = spr_hand_point_ol}
 	break
 case MOUSE_MODE.DRAG :
 	mouse_sprite = spr_resize_a_cross_ol

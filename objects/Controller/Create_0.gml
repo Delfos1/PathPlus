@@ -20,7 +20,7 @@ gpu_set_tex_mip_filter(tf_anisotropic)
 prev_mouse_x			= mouse_x
 prev_mouse_y			= mouse_y
 
-enum MOUSE_MODE {NORMAL, LASSO, HOVER, DRAG, ADD}
+enum MOUSE_MODE {NORMAL, LASSO, HOVER, DRAG, ADD, INSERT}
 enum MOUSE_COLL {NONE, POINT, LINE, HANDLE}
 mouse_mode				= MOUSE_MODE.NORMAL
 points_selected			= []

@@ -28,7 +28,6 @@ function PathPlus(_path = []) constructor
 	}
 	cache		=	[]
 	_cache_gen  =	false
-	_mismatch	=	false
 	_properties = {}
 	
 	#region Polyline Basics
@@ -43,33 +42,8 @@ function PathPlus(_path = []) constructor
 		array_push(polyline,_optional_vars)
 		
 		var n = l-1
-		
-		polyline[n].cached = false
-
-		if n != 0 
-		{
-			polyline[n-1].cached = false
-
-			if closed
-			{
-				polyline[0].cached = false
-			}
-		}
-		switch(type){
-			
-			case PATHPLUS.CATMULL_ROM:
-			
-			__catmull_rom_set()
-			
-			break
-			case PATHPLUS.BEZIER:
-			
-			__bezier_set(n-2,n)
-			
-			break
-		}
 		_cache_gen  =	false
-		//__generate_cache()
+		_regen()
 		return self
 	}
 	/// Inserts a point to the polyline at the n position
@@ -86,71 +60,24 @@ function PathPlus(_path = []) constructor
 
 		l++
 		array_insert(polyline,n,_optional_vars)
-		var _i = n*precision
-		repeat(precision)
-		{
-			array_insert(cache,_i,0)
-			_i++
-		}
 		
 		_cache_gen  =	false
 		
-		switch(type){
-			
-			case PATHPLUS.CATMULL_ROM:
-			
-			__catmull_rom_set()
-			
-			break
-			case PATHPLUS.BEZIER:
-			
-			__bezier_set_single(n)
-			
-			break
-		}
-		//__generate_cache()
-
-		
-		
+		_regen()
 		return self
 	}
 	/// Removes the point on the polyline at the n position
 	static RemovePoint	= function(n,_amount = 1) 
 	{
-		n = min(n,l-1)
-		
-		if closed
-		{
-			var _prev = n==0 ? l-1 : n-1
-			var _prev2 = n==0 ? l-2 : n-2
-			var _next = n==l-1 ? 0 : n+1
-			var _next2 = n==l-2 ? 1 : n+2
-		}
-		else
-		{
-			var _prev = max(0,n-1)
-			var _prev2 = max(0,n-2)
-			var _next = min(l-1,n+1)
-			var _next2 = min(l-1,n+2)
-		}
-			polyline[_prev].cached		= false
-			polyline[_next].cached		= false
-			polyline[n].cached		= false
-			_cache_gen  =	false
+		n = clamp(n,0,l-1)
+
+		_cache_gen  =	false
 			
 		l-=_amount
 		array_delete(polyline,n,_amount)
-		_cache_gen  =	false
 		
-		if type == PATHPLUS.CATMULL_ROM 
-		{
-			__catmull_rom_set()
-		}		
-		var _i = n*precision
+		_regen()
 
-		array_delete(cache,_i,_amount*precision)
-
-		//__generate_cache()
 		return self
 	}
 	/// Changes the point on the polyline at the n position
@@ -161,24 +88,7 @@ function PathPlus(_path = []) constructor
 			_prevy = polyline[n].y		
 		polyline[n].x		= _x
 		polyline[n].y		= _y
-		polyline[n].cached	= false
-		
-		if closed
-		{
-			var _prev = n-1<0 ? l-1 : n-1
-			var _prev2 = n-2<0 ? l-2 : n-2
-			var _next = n==l-1 ? 0 : n+1
-			var _next2 = n>=l-2 ? n-(l-2) : n+2
-		}
-		else
-		{
-			var _prev = max(0,n-1)
-			var _prev2 = max(0,n-2)
-			var _next = min(l-1,n+1)
-			var _next2 = min(l-2,n+2)
-		}
-			polyline[_prev].cached		= false
-			polyline[_next].cached		= false
+
 		_cache_gen  =	false
 		
 		switch(type){
@@ -199,19 +109,13 @@ function PathPlus(_path = []) constructor
 
 					if _other_handle != undefined 
 					{
-						/*
-						var _angle = point_direction(polyline[n].x, polyline[n].y, _first_handle.x,_first_handle.y)+180
-						var _length = 	point_distance(_prevx, _prevy, _other_handle.x,_other_handle.y) ;
-						_other_handle.x =  polyline[n].x+lengthdir_x(_length,_angle)
-						_other_handle.y =  polyline[n].y+lengthdir_y(_length,_angle)*/
 						_other_handle.x += (_x-_prevx)
 						_other_handle.y += (_y-_prevy)
 					}
-			
+			__bezier_set()
 			break
 		}
-		
-		//__generate_cache()
+
 		return self
 	}
 	/// Translates the n point on the polyline relative to its current position
@@ -229,8 +133,10 @@ function PathPlus(_path = []) constructor
 	static ChangePointVariable	= function(n,_var_as_string,_new_value) 
 	{
 		if _var_as_string == "x" || _var_as_string == "y" || _var_as_string == "h1" || _var_as_string == "h2" || _var_as_string == "weight" return self
+		n = clamp(n,0,l-1)
 		if !struct_exists(polyline[n],_var_as_string) return self
 		
+
 		polyline[n][$ _var_as_string] = _new_value
 		polyline[n].cached	= false
 		_cache_gen  =	false
@@ -350,7 +256,6 @@ function PathPlus(_path = []) constructor
 		_cache_gen  =	false
 		 polyline[max(0,(_n-1))].cached = false
 		 polyline[_n].cached = false
-		__generate_cache()
 		return self
 	}
 	/// Changes the position of a bezier handle to a position relative to its control point
@@ -382,7 +287,7 @@ function PathPlus(_path = []) constructor
 		if type != PATHPLUS.BEZIER return
 
 		var _first_handle = _handle == true ? polyline[_n][$"h1"] : polyline[_n][$"h2"]
-		if _first_handle == undefined return;
+		if _first_handle == undefined return self;
 		
 		 x = _first_handle.x + x
 		 y = _first_handle.y + y
@@ -420,7 +325,6 @@ function PathPlus(_path = []) constructor
 			_other_handle.y =  polyline[_n].y+lengthdir_y(_length,_angle)
 		}
 		_cache_gen  =	false
-		__generate_cache()
 		return self
 	}
 	
@@ -449,17 +353,12 @@ function PathPlus(_path = []) constructor
 	{
 		if type != PATHPLUS.B_SPLINE return;
 		polyline[n].weight = _weight
-		polyline[n].cached	= false
 		_cache_gen  =	false
-		__generate_cache()
 	}
 	#endregion
 
-	static ChangeSpeedFalloff = function(n,_speed,_falloff = 0.2)
-	{
-		
-		
-	}
+	//static ChangeSpeedFalloff = function(n,_speed,_falloff = 0.2){}
+
 	/// Export a .yy file with the contents of the cache polyline. You need to overwrite an existing path in your GameMaker project for it to work.
 	/// Recommended that you simplify the result before exporting to avoid redundant information
 	static Export = function(){
@@ -487,6 +386,22 @@ function PathPlus(_path = []) constructor
 		buffer_delete(_buff);
 	}
 }
+	
+	static _regen =  function()
+	{
+	 switch(type){
+			
+			case PATHPLUS.CATMULL_ROM:
+					__catmull_rom_set()
+			break
+			case PATHPLUS.BEZIER:
+					__bezier_set()
+			break
+			case PATHPLUS.B_SPLINE:
+					SetBSpline(_properties.degree)
+			break
+		}	
+	}
 	
 	static Reset	= function()
 	{
@@ -557,29 +472,24 @@ function PathPlus(_path = []) constructor
 		draw_set_color(_c1)
 	}
 	
-	static __generate_cache	= function()
+	static GenerateCache	= function()
 	{
 		if type == PATHPLUS.LINEAR || _cache_gen return
 		
 		var _t = 1/precision 
-
+		cache = []
 		
 		for (var _i= 0, _n = 0 ; _i < l; _i+=_t )
 		{ 
-			/*if polyline[floor(_i)].cached == true
-			{
-				_n++
-				continue
-			}*/
 			switch(type)
 			{
 				case PATHPLUS.BEZIER:
-						var _point =	__bezier_point(polyline[floor(_i)],polyline[floor(_i+1)%(l-1)],frac(_i))
+						var _point =	__bezier_point(polyline[floor(_i)],polyline[floor(_i+1)%l],frac(_i))
 				break;
 				case PATHPLUS.CATMULL_ROM:
-						if polyline[floor(_i)][$"segment"] == undefined 
+						if polyline[floor(_i)][$"segment"] == undefined || ( !closed && _i >= l-1 )
 						{
-							var _point = 	polyline[floor(_i)]
+							var _point = 	polyline[floor(_i)] 
 						}
 						else
 						{
@@ -602,7 +512,7 @@ function PathPlus(_path = []) constructor
 					
 			cache[_n]= _point
 			
-			if _i >= 1 polyline[floor(_i)-1].cached = true
+			 if ( !closed && _i >= l-1 ) break
 			_n++
 		}
 
@@ -689,7 +599,7 @@ function PathPlus(_path = []) constructor
 			cache= []
 			
 			__catmull_rom_set()
-			__generate_cache()
+			GenerateCache()
 		}
 		static  __catmull_rom_set = function(_start = 0 , _end = l)
 		{
@@ -755,7 +665,6 @@ function PathPlus(_path = []) constructor
 			}
 		
 				polyline[_i].segment = __catmull_rom_coef(_p1,_p2,_p3,_p4,_alpha,_tension)
-				polyline[_i].cached = false
 			}
 		}
 		/// Based off Mika Rantanen implementation
@@ -817,11 +726,11 @@ function PathPlus(_path = []) constructor
 			var _size = closed ? l*precision : ((l-1)*precision)+1
 			cache= array_create(_size,0)
 			__bezier_set(0,l)
-			__generate_cache()
+			GenerateCache()
 			
 			return self
 		}
-		static  __bezier_set	  = function(_start = 0 ,  _end = 1)
+		static  __bezier_set	  = function(_start = 0 ,  _end = l)
 		{
 			if _end == l
 			{
@@ -872,10 +781,10 @@ function PathPlus(_path = []) constructor
 				_p4 ??= polyline[(_i+2)%l];
 		
 				var _tangents= __bezier_tangents(_p1,_p2,_p3,_p4)
-				_p2.h1 = _tangents[0]
-				_p3.h2 = _tangents[1]
+				_p2[$ "h1"] ??= _tangents[0]
+				_p3[$ "h2"] ??= _tangents[1]
 				
-				_p2.cached = false
+
 			}
 		}
 		static  __bezier_set_single	  = function(_n)
@@ -1021,10 +930,10 @@ function PathPlus(_path = []) constructor
 		
 		for(var _i = 0; _i < l; _i++)
 		{
-			polyline[_i].weight = 1
+			polyline[_i][$ "weight"] ??= 1
 		}
 		__bspline_construct_knot_vector()
-		__generate_cache()
+		GenerateCache()
 		
 		return self
 	}
@@ -1138,4 +1047,6 @@ function PathPlus(_path = []) constructor
 }
 	
 	#endregion
+	
+
 }

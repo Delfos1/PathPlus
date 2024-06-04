@@ -1,2 +1,3 @@
-var record = PathDrawRecording()
+PathRecordDraw()
+draw_self()
 

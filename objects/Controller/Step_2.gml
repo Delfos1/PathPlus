@@ -1,1 +1,1 @@
-pathplus.__generate_cache()
+pathplus.GenerateCache()

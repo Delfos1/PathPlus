@@ -1,5 +1,7 @@
 if draw
 {
+	x=mouse_x
+	y=mouse_y
 	PathRecord(mouse_x,mouse_y)
 	if _guide != undefined
 	{
