@@ -1,8 +1,8 @@
 ///  Returns true if the given test point is inside 
 ///  the given 2D polygon, false otherwise.
 ///
-///   @param {real} x coordinates of the test point
-///	  @param {real} y coordinates of the test point
+///   @param {real} x0 coordinates of the test point
+///	  @param {real} y0 coordinates of the test point
 ///   @param {array} polygon     array of series of array coordinate pairs defining the shape of a polygon like so: [[x,y],[x,y],...]
 ///
 ///

@@ -1,19 +1,14 @@
 // Transforms a path into a PathPlus with Catmull-Rom interpolation
 
 pathplus = new PathPlus(Path2)
-pathplus.SetCatmullRom(.5,0)
+//pathplus.SetCatmullRom(.5,0.5)
 
 
-//pathplus.SetBezier()
+pathplus.SetBezier()
 
 //pathplus.BakeToPath()
 
 
-
-/*
-window_set_fullscreen(true)
-display_reset(8, true);
-*/
 gpu_set_texfilter(true)
 gpu_set_tex_mip_filter(tf_anisotropic)
 

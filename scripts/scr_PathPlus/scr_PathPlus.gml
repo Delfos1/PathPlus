@@ -431,16 +431,14 @@ function PathPlus(_path = []) constructor
 			{
 				draw_set_color(COLOR_INTR)
 				draw_circle(_x+_lines[_i].x,_y+_lines[_i].y,2,false)
-				draw_set_color(c_gray)
-				if type == PATHPLUS.CATMULL_ROM
-				{
+				draw_set_color(c_red)
+				if type != PATHPLUS.LINEAR
+				{	// get normal and extend from x, and draw it
 					var x1 = _x+_lines[_i].x+lengthdir_x(10,_lines[_i].normal)
 					var y1 =_y+_lines[_i].y+lengthdir_y(10,_lines[_i].normal)
 					var x2 = _x+_lines[_i].x
 					var y2 =_y+_lines[_i].y
 					draw_line(x1,y1,x2,y2)
-					// get normal and extend from x, and draw it
-					//draw_line
 				}
 
 			}
@@ -493,6 +491,16 @@ function PathPlus(_path = []) constructor
 						if polyline[floor(_i)][$"segment"] == undefined || ( !closed && _i >= l-1 )
 						{
 							var _point = 	polyline[floor(_i)] 
+							/*
+							if polyline[floor(_i)][$"segment"] == undefined {
+								var _point2 =	__catmull_rom_point(polyline[floor(_i-1)].segment,frac(_i-1))
+							}
+							else
+							{
+								var _point2 =	__catmull_rom_point(polyline[floor(_i+1)].segment,frac(_i+1))
+							}*/
+							_point.transversal = 0
+							_point.normal =  0
 						}
 						else
 						{
@@ -587,6 +595,11 @@ function PathPlus(_path = []) constructor
 	#region Catmull-Rom
 		static SetCatmullRom = function(_alpha=.5,_tension=.5)
 		{
+			if l <=2
+			{
+				type		= PATHPLUS.LINEAR
+				return
+			}
 			_alpha		= clamp(_alpha,0,1)
 			_tension	= clamp(_tension,0,1)
 			_properties = {alpha : _alpha , tension : _tension}
@@ -598,6 +611,13 @@ function PathPlus(_path = []) constructor
 		}
 		static  __catmull_rom_set = function(_start = 0 , _end = l)
 		{
+			if l <=2
+			{
+				// Prevents crashing if there are not enough points to make a curve
+				type		= PATHPLUS.LINEAR
+				return
+			}
+			
 			var _alpha		= _properties.alpha,
 				_tension	= _properties.tension
 				
@@ -712,8 +732,8 @@ function PathPlus(_path = []) constructor
 		var _x = 3 * segment.a.x * _2t + 2 * segment.b.x * t + segment.c.x;
 		var _y = 3 * segment.a.y * _2t  + 2 * segment.b.y * t + segment.c.y;
 	
-		point.tangent = point_direction(0,0,_x,_y)
-		point.normal =   point.tangent +90
+		point.transversal = point_direction(0,0,_x,_y)
+		point.normal =   point.transversal +90
 			return point
 		}
 
@@ -898,6 +918,8 @@ function PathPlus(_path = []) constructor
 		{
 			if p1[$ "h1"]  == undefined || p2[$ "h2"] == undefined
 			{
+				p1.transversal = 0
+				p1.normal = -90
 				return p1
 			}
 			var point = {},
@@ -908,8 +930,24 @@ function PathPlus(_path = []) constructor
 			var mt2 = mt * mt;
 			var mt3 = mt2 * mt;
 
-			point.x = p1.x * mt3 + 3 * p1.h1.x * mt2 * t + 3 * p2.h2.x * mt * _2t + p2.x * _3t;
-			point.y = p1.y * mt3 + 3 * p1.h1.y * mt2 * t + 3 * p2.h2.y * mt * _2t + p2.y * _3t;
+			point.x = (p1.x * mt3) + (3 * p1.h1.x * mt2 * t) + 3 * (p2.h2.x * mt * _2t) + (p2.x * _3t);
+			point.y = (p1.y * mt3) + (3 * p1.h1.y * mt2 * t) + 3 * (p2.h2.y * mt * _2t) + (p2.y * _3t);
+			
+			if t==0
+			{
+				t=-0.0001
+				_2t = t*t
+				_3t= t*_2t
+				mt = 1 - t
+				mt2 = mt * mt
+				mt3 = mt2 * mt
+			}
+			
+			var  _tan_x = (p1.x * mt2 ) + (2 * p1.h1.x * mt * t ) + (p2.h2.x * _2t)
+			var  _tan_y = (p1.y * mt2 ) + (2 * p1.h1.y * mt * t ) + (p2.h2.y * _2t)
+			
+			point.transversal = point_direction(point.x,point.y,_tan_x,_tan_y)
+			point.normal =   point.transversal -90
 			  
 			return point
 		}	
