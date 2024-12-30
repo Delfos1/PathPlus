@@ -1,10 +1,10 @@
 // Transforms a path into a PathPlus with Catmull-Rom interpolation
 
 pathplus = new PathPlus(Path2)
-//pathplus.SetCatmullRom(.5,0.5)
+pathplus.SetCatmullRom(.5,0)
 
-//pathplus.SetBSpline(2)
-pathplus.SetBezier()
+
+//pathplus.SetBezier()
 
 //pathplus.BakeToPath()
 

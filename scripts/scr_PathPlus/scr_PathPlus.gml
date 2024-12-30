@@ -410,6 +410,7 @@ function PathPlus(_path = []) constructor
 			draw_path(path,x,y,true)
 			return
 		}
+		// If type is linear or we are forcing polyline, assign the polyline array, otherwise draw from cache
 		var _lines = type == PATHPLUS.LINEAR || _force_poly ? polyline : cache
 		
 		var _c1 = draw_get_color()
@@ -430,6 +431,18 @@ function PathPlus(_path = []) constructor
 			{
 				draw_set_color(COLOR_INTR)
 				draw_circle(_x+_lines[_i].x,_y+_lines[_i].y,2,false)
+				draw_set_color(c_gray)
+				if type == PATHPLUS.CATMULL_ROM
+				{
+					var x1 = _x+_lines[_i].x+lengthdir_x(10,_lines[_i].normal)
+					var y1 =_y+_lines[_i].y+lengthdir_y(10,_lines[_i].normal)
+					var x2 = _x+_lines[_i].x
+					var y2 =_y+_lines[_i].y
+					draw_line(x1,y1,x2,y2)
+					// get normal and extend from x, and draw it
+					//draw_line
+				}
+
 			}
 		}
 		if _points
@@ -457,6 +470,7 @@ function PathPlus(_path = []) constructor
 					}
 				}	
 			}
+
 		}
 		draw_set_color(_c1)
 	}
@@ -695,9 +709,14 @@ function PathPlus(_path = []) constructor
 		              segment.b.y * _2t +
 		              segment.c.y * t +
 		              segment.d.y;	
-			  
+		var _x = 3 * segment.a.x * _2t + 2 * segment.b.x * t + segment.c.x;
+		var _y = 3 * segment.a.y * _2t  + 2 * segment.b.y * t + segment.c.y;
+	
+		point.tangent = point_direction(0,0,_x,_y)
+		point.normal =   point.tangent +90
 			return point
 		}
+
 	#endregion
 	
 	#region Bezier
