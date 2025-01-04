@@ -88,6 +88,7 @@
     {"id":{"name":"o_mouse_col","path":"objects/o_mouse_col/o_mouse_col.yy",},},
     {"id":{"name":"o_Recorder","path":"objects/o_Recorder/o_Recorder.yy",},},
     {"id":{"name":"o_Transformer","path":"objects/o_Transformer/o_Transformer.yy",},},
+    {"id":{"name":"Path2_1","path":"paths/Path2_1/Path2_1.yy",},},
     {"id":{"name":"Path2","path":"paths/Path2/Path2.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"__input_axis_is_directional","path":"scripts/__input_axis_is_directional/__input_axis_is_directional.yy",},},

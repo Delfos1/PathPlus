@@ -76,6 +76,23 @@ if mouse_mode!= MOUSE_MODE.DRAG &&  mouse_mode!= MOUSE_MODE.LASSO && mouse_mode!
 	 var _i = 0
 }
 
+if input_check_double_pressed("left_click")
+{
+	if mouse_mode ==  MOUSE_MODE.HOVER && mouse_colliding	== MOUSE_COLL.LINE
+	{
+		if hovered_on != undefined 
+		{
+			pathplus.InsertPoint(ceil(hovered_on/pathplus.precision),mouse_x,mouse_y)
+			RemakeSelectablePoints()
+			hovered_on = undefined
+		}
+	}
+	else if mouse_mode== MOUSE_MODE.ADD
+	{
+		pathplus.AddPoint(mouse_x,mouse_y)
+		RemakeSelectablePoints()
+	}
+}
 if input_check_pressed("left_click")
 {
 	// If clicking when hovering over a slectable element, dragging an element or colliding witha  point
@@ -107,20 +124,7 @@ if input_check_pressed("left_click")
 		}
 	
 	}
-	else if mouse_mode ==  MOUSE_MODE.HOVER && mouse_colliding	== MOUSE_COLL.LINE
-	{
-		if hovered_on != undefined 
-		{
-			pathplus.InsertPoint(ceil(hovered_on/pathplus.precision),mouse_x,mouse_y)
-			RemakeSelectablePoints()
-			hovered_on = undefined
-		}
-	}
-	else if mouse_mode== MOUSE_MODE.ADD
-	{
-		pathplus.AddPoint(mouse_x,mouse_y)
-		RemakeSelectablePoints()
-	}
+
 }
 if keyboard_check_pressed(vk_add)
 {

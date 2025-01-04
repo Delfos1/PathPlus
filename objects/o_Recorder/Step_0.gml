@@ -23,7 +23,7 @@ else
 			_guide = instance_create_layer(x,y,layer,guide)
 			with _guide
 			{
-				path_start(other.path_plus.path,other.path_plus.path_speed, path_action_continue,true)}
+				path_start(other.path_plus.path,other.path_plus.path_speed, path_action_reverse,true)}
 			}
 	}
 }

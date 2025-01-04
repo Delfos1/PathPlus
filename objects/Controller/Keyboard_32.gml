@@ -1,0 +1,2 @@
+pathplus.Simplify()
+RemakeSelectablePoints()

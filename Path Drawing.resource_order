@@ -65,6 +65,7 @@
     {"name":"o_lasso","order":4,"path":"objects/o_lasso/o_lasso.yy",},
     {"name":"o_mouse_col","order":5,"path":"objects/o_mouse_col/o_mouse_col.yy",},
     {"name":"o_Transformer","order":2,"path":"objects/o_Transformer/o_Transformer.yy",},
+    {"name":"Path2_1","order":2,"path":"paths/Path2_1/Path2_1.yy",},
     {"name":"Path2","order":1,"path":"paths/Path2/Path2.yy",},
     {"name":"__input_axis_is_directional","order":9,"path":"scripts/__input_axis_is_directional/__input_axis_is_directional.yy",},
     {"name":"__input_binding_get_label","order":10,"path":"scripts/__input_binding_get_label/__input_binding_get_label.yy",},

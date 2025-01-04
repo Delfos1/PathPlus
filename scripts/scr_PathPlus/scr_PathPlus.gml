@@ -1,5 +1,7 @@
 enum PATHPLUS {LINEAR, BEZIER,CATMULL_ROM,GM_SMOOTH }
 
+/// @desc Pathplus constructor. Needs to be provided of a Game Maker Path resource or
+
 function PathPlus(_path = []) constructor
 {
 	if is_handle(_path)
@@ -24,7 +26,7 @@ function PathPlus(_path = []) constructor
 	}
 	else
 	{
-		show_message("PATH PLUS ERROR: Provided wrong type of resource for PathPlus creation. Must be a path or an array of coordinates")
+		show_debug_message("▉╳▉ PathPlus Error ▉╳▉: Provided wrong type of resource for PathPlus creation. Must be a path or an array of coordinates")
 	}
 	cache		=	[]
 	_cache_gen  =	false
@@ -41,7 +43,6 @@ function PathPlus(_path = []) constructor
 
 		array_push(polyline,_optional_vars)
 		
-		var n = l-1
 		_cache_gen  =	false
 		_regen()
 		return self
@@ -84,7 +85,7 @@ function PathPlus(_path = []) constructor
 	static ChangePoint	= function(n,_x,_y) 
 	{
 		n = clamp(n,0,l-1)
-		var	_prevx = polyline[n].x		,
+		var	_prevx = polyline[n].x,
 			_prevy = polyline[n].y		
 		polyline[n].x		= _x
 		polyline[n].y		= _y
@@ -129,7 +130,7 @@ function PathPlus(_path = []) constructor
 
 		return self
 	}
-	/// Changes a single variable within a point. To be used with user amde variables. For PathPlus variables use the proper getters
+	/// Changes a single variable within a point. To be used with user made variables. For PathPlus variables use the proper getters
 	static ChangePointVariable	= function(n,_var_as_string,_new_value) 
 	{
 		if _var_as_string == "x" || _var_as_string == "y" || _var_as_string == "h1" || _var_as_string == "h2" || _var_as_string == "weight" return self
@@ -144,7 +145,53 @@ function PathPlus(_path = []) constructor
 		return self
 	}
 	//noise
+	
 	//simplify
+	static Simplify = function (_epsilon=undefined){
+
+	var _points = polyline
+	var _start = 0
+	var _end = l-1
+	var simple_point_list = array_create(l)
+
+	simple_point_list[_start]	=_points[_start]
+	simple_point_list[_end]		=_points[_end]
+
+	
+	// Go through all points to find the points that are furthest and closest from the line between A and B
+	var _maxDist = -1,
+		_maxIndex = -1,
+		_avgDist = 0,
+		_medVal = [],
+		_distToAvg =0
+			
+	for(var _i = _start ; _i< _end ;_i++)
+	{
+		var _d = pointToLineDistance(	_points[_i].x		,_points[_i].y,
+										_points[_start].x	,_points[_start].y,
+										_points[_end].x	,_points[_end].y)
+		_avgDist += _d
+		//_medVal[_i] = _d
+			
+		if _d > _maxDist
+		{
+				_maxDist	=	_d
+				_maxIndex	=	_i
+		}
+	}
+	_avgDist =(_avgDist/_end)
+	_avgDist *=.1
+	_epsilon= _epsilon == undefined ? _avgDist : lerp(0,_maxDist,_epsilon)
+
+		polyline	=	_array_clean(_array_merge(simple_point_list,__simplify_step(_points,_epsilon,_start,_end)))
+		l			=	array_length(polyline)
+		_cache_gen  =	false
+		_regen()
+		
+		return self
+
+}
+	
 	//closest point on path
 	#endregion
 	#region Path Wrappers
@@ -431,11 +478,11 @@ function PathPlus(_path = []) constructor
 			{
 				draw_set_color(COLOR_INTR)
 				draw_circle(_x+_lines[_i].x,_y+_lines[_i].y,2,false)
-				draw_set_color(c_red)
+				draw_set_color(c_gray)
 				if type != PATHPLUS.LINEAR
 				{	// get normal and extend from x, and draw it
-					var x1 = _x+_lines[_i].x+lengthdir_x(10,_lines[_i].normal)
-					var y1 =_y+_lines[_i].y+lengthdir_y(10,_lines[_i].normal)
+					var x1 = _x+_lines[_i].x+lengthdir_x(6,_lines[_i].normal)
+					var y1 =_y+_lines[_i].y+lengthdir_y(6,_lines[_i].normal)
 					var x2 = _x+_lines[_i].x
 					var y2 =_y+_lines[_i].y
 					draw_line(x1,y1,x2,y2)
@@ -491,14 +538,6 @@ function PathPlus(_path = []) constructor
 						if polyline[floor(_i)][$"segment"] == undefined || ( !closed && _i >= l-1 )
 						{
 							var _point = 	polyline[floor(_i)] 
-							/*
-							if polyline[floor(_i)][$"segment"] == undefined {
-								var _point2 =	__catmull_rom_point(polyline[floor(_i-1)].segment,frac(_i-1))
-							}
-							else
-							{
-								var _point2 =	__catmull_rom_point(polyline[floor(_i+1)].segment,frac(_i+1))
-							}*/
 							_point.transversal = 0
 							_point.normal =  0
 						}
@@ -954,4 +993,135 @@ function PathPlus(_path = []) constructor
 	#endregion
 	
 
+}
+
+function PathPlus_Point() constructor
+{
+	x = 0 ;
+	y = 0 ;
+	speed = 0 ;
+	cached = false;
+	
+	static MakeFromPath = function(_path, _index , _keep_speed)
+	{
+			x = path_get_point_x(_path,_index)	
+			y = path_get_point_y(_path,_index)	
+			if _keep_speed speed = path_get_speed(_path,_index)
+	}
+}
+
+/**
+ * Private function used by PathPlus
+  */
+function __simplify_step(_points,_epsilon,_start,_end)
+{
+		var _maxDist = -1
+		var _maxIndex = -1
+
+		var point_list = array_create(array_length(_points))
+		
+	point_list[_start]=_points[_start]
+	point_list[_end]=_points[_end]
+
+		// Go through all points to find the point that is furthest from the line between A and B
+		for(var _i = _start ; _i< _end ;_i++)
+		{
+			var _d = pointToLineDistance(	_points[_i].x		,_points[_i].y,
+											_points[_start].x	,_points[_start].y,
+											_points[_end].x	,_points[_end].y)
+			if _d > _maxDist
+			{
+				  _maxDist =	_d
+				 _maxIndex = _i
+				 var _x = _points[_i].x ,	
+				 _y = _points[_i].y
+			}
+		}
+
+		// If the point is further than epsilon, add it to the collection and try again between left and right sides of the point
+	    if (_maxDist > _epsilon)
+		{
+			point_list[_maxIndex]=_points[_maxIndex]
+
+	        if (_maxIndex - _start > 1)
+			{
+				point_list = _array_merge(point_list, __simplify_step(_points,_epsilon,_start,_maxIndex))//recursion from start to index
+			}
+	        if (_end - _maxIndex > 1)
+			{
+				point_list = _array_merge(point_list,__simplify_step(_points,_epsilon,_maxIndex,_end))// recursion from index to end
+			}
+	    }
+		return  point_list
+	}
+
+/**
+ * Given a line XY1->XY2 and a Point XY3, find the distance from the point to the line.
+ */
+function pointToLineDistance(x1,y1,x2,y2,x3,y3){
+	static vector_length = function(_vec)
+	{
+		return sqrt(sqr(_vec[0])+sqr(_vec[1]))
+	}
+// dot product of normalized AB and AP. AB being the original line and AP the vector from point A to the point we want to know.
+// this is the projection on AB of the distance to point P
+
+//define AB vector
+var _ABvec = [(x3-x2),(y3-y2)]
+
+// define AP vector
+var _APvec = [(x1-x2),(y1-y2)]
+
+var _ABlength = vector_length(_ABvec)
+var _APlength = vector_length(_APvec)
+		
+_ABvec = [_ABvec[0]/_ABlength,_ABvec[1]/_ABlength]
+
+var _l = dot_product(_APvec[0],_APvec[1],_ABvec[0],_ABvec[1])
+	
+return sqrt(sqr(_APlength)-sqr(_l))
+};
+
+/// @desc Merges two arrays
+function _array_merge(array1,array2)
+{
+	var l = array_length(array1)
+	
+	var _new_array = array1 //array_create(l)
+	
+	for(var _i = 0 ; _i < l ; _i++ )
+	{
+		if (array1[_i] == 0 && array2[_i] != 0) 
+		{
+			_new_array[_i] = array2[_i]
+		}/*		
+		else if (array1[_i] != 0 && array2[_i] == 0 )
+		{
+			_new_array[_i] = array1[_i]
+		}
+		else if (array1[_i] != 0 && array2[_i] != 0 )
+		{
+			_new_array[_i] = array1[_i]
+		}*/
+	}
+	
+	return _new_array
+}
+
+/// @desc removes empty positions from an array
+function _array_clean(array)
+{
+	var l = array_length(array)
+	
+	var _new_array = array_create()
+	
+	for(var _i = 0 ; _i < l ; _i++ )
+	{
+		if array[_i] != 0
+		{
+			array_push(_new_array,array[_i])	
+		}
+	}
+	
+	return _new_array
 }
