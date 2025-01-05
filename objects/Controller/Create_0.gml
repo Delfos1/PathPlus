@@ -1,7 +1,7 @@
 // Transforms a path into a PathPlus with Catmull-Rom interpolation
 
-pathplus = new PathPlus(Path2_1)
-pathplus.SetCatmullRom(.5,0.5)
+pathplus = new PathPlus(Path2)
+//pathplus.SetCatmullRom(0,0)
 
 
 //pathplus.SetBezier()

@@ -1,19 +1,39 @@
 enum PATHPLUS {LINEAR, BEZIER,CATMULL_ROM,GM_SMOOTH }
+/// PATH PLUS 
 
+#macro PP_COLOR_LINE		c_white
+#macro PP_COLOR_PT			c_red
+#macro PP_COLOR_PT_SEL		c_yellow
+#macro PP_COLOR_INTR		c_aqua
+#macro PP_COLOR_BEZ			c_fuchsia
+#macro PP_COLOR_NORMAL		c_gray
+
+#macro SHOW_DEBUG_MESSAGES true
+
+__pathplus_show_debug("▉ Using PathPlus v 1.1 - by Delfos ▉")
 /// @desc Pathplus constructor. Needs to be provided of a Game Maker Path resource or
-
 function PathPlus(_path = []) constructor
 {
 	if is_handle(_path)
 	{
 		path		=	path_add()
 		path_assign(path,_path)
-		PathToPoly(false,true);
-		l			=	path_get_number(path);
+		
 		precision	=	sqr(path_get_precision(path));
 		closed		=	path_get_closed(path);
 		type		=	path_get_kind(path) == true ? PATHPLUS.GM_SMOOTH : PATHPLUS.LINEAR	;
-		pixel_length = path_get_length(path)
+		
+		if type == PATHPLUS.GM_SMOOTH 
+		{
+			PathToPoly(true,true);
+			l			=	path_get_number(path)*precision;
+			type = PATHPLUS.LINEAR
+			__pathplus_show_debug("▉!▉ PathPlus Warning ▉!▉: PathPlus doesn't yet manage smooth curves, baking smoothness instead")
+		}else{
+			PathToPoly(false,true);
+			l			=	path_get_number(path);
+		}
+		pixel_length=	path_get_length(path)
 	}
 	else if is_array(_path)
 	{
@@ -23,10 +43,11 @@ function PathPlus(_path = []) constructor
 		precision	=	8*8;
 		closed		=	true;
 		type		=	PATHPLUS.LINEAR	;
+		pixel_length =	GetLength()
 	}
 	else
 	{
-		show_debug_message("▉╳▉ PathPlus Error ▉╳▉: Provided wrong type of resource for PathPlus creation. Must be a path or an array of coordinates")
+		__pathplus_show_debug("▉╳▉ PathPlus Error ▉╳▉: Provided wrong type of resource for PathPlus creation. Must be a path or an array of coordinates")
 	}
 	cache		=	[]
 	_cache_gen  =	false
@@ -145,7 +166,15 @@ function PathPlus(_path = []) constructor
 		return self
 	}
 	//noise
-	
+	static AddNoise		= function(_amount)
+	{
+		var _l = array_length(cache)
+		for(var i = 0 ; i<_l ; i++ )
+		{	
+			cache[i].x += random_range(-_amount,_amount)
+			cache[i].y += random_range(-_amount,_amount)
+		}
+	}
 	//simplify
 	static Simplify = function (_epsilon=undefined){
 
@@ -159,10 +188,9 @@ function PathPlus(_path = []) constructor
 
 	
 	// Go through all points to find the points that are furthest and closest from the line between A and B
-	var _maxDist = -1,
+	var _maxDist = -infinity,
 		_maxIndex = -1,
 		_avgDist = 0,
-		_medVal = [],
 		_distToAvg =0
 			
 	for(var _i = _start ; _i< _end ;_i++)
@@ -171,7 +199,7 @@ function PathPlus(_path = []) constructor
 										_points[_start].x	,_points[_start].y,
 										_points[_end].x	,_points[_end].y)
 		_avgDist += _d
-		//_medVal[_i] = _d
+
 			
 		if _d > _maxDist
 		{
@@ -179,8 +207,7 @@ function PathPlus(_path = []) constructor
 				_maxIndex	=	_i
 		}
 	}
-	_avgDist =(_avgDist/_end)
-	_avgDist *=.1
+	_avgDist =(_avgDist/_end)*.1
 	_epsilon= _epsilon == undefined ? _avgDist : lerp(0,_maxDist,_epsilon)
 
 		polyline	=	_array_clean(_array_merge(simple_point_list,__simplify_step(_points,_epsilon,_start,_end)))
@@ -192,6 +219,20 @@ function PathPlus(_path = []) constructor
 
 }
 	
+	static GetLength = function(){
+		
+		var _array = type	==	PATHPLUS.LINEAR ? polyline : cache ,
+		_l2 = array_length(_array),
+		_l =  closed ? _l2 : _l2-1,
+		_pixel_length = 0
+		for(var i = 0 ; i<_l ; i++ )
+		{	
+			var ii = (i+1)%_l2
+			_pixel_length += point_distance(_array[i].x,_array[i].y,_array[ii].x,_array[ii].y)
+		}
+		
+		return _pixel_length
+	}
 	//closest point on path
 	#endregion
 	#region Path Wrappers
@@ -465,7 +506,7 @@ function PathPlus(_path = []) constructor
 		
 		for(var _i=0; _i<_len;_i++)
 		{
-			draw_set_color(COLOR_LINE)
+			draw_set_color(PP_COLOR_LINE)
 			if closed && _i + 1 == _len
 			{
 				draw_line(_x+_lines[_i].x,_y+_lines[_i].y,_x+_lines[0].x,_y+_lines[0].y)
@@ -476,9 +517,9 @@ function PathPlus(_path = []) constructor
 			}
 			if _points
 			{
-				draw_set_color(COLOR_INTR)
+				draw_set_color(PP_COLOR_INTR)
 				draw_circle(_x+_lines[_i].x,_y+_lines[_i].y,2,false)
-				draw_set_color(c_gray)
+				draw_set_color(PP_COLOR_NORMAL)
 				if type != PATHPLUS.LINEAR
 				{	// get normal and extend from x, and draw it
 					var x1 = _x+_lines[_i].x+lengthdir_x(6,_lines[_i].normal)
@@ -493,14 +534,14 @@ function PathPlus(_path = []) constructor
 		if _points
 		{
 			var _lines = polyline
-			draw_set_color(COLOR_PT)
+			draw_set_color(PP_COLOR_PT)
 			for(var _i=0; _i<array_length(_lines);_i++)
 			{
 				draw_circle(_x+_lines[_i].x,_y+_lines[_i].y,3,false)
 			}
 			if type == PATHPLUS.BEZIER 
 			{
-				draw_set_color(COLOR_BEZ)
+				draw_set_color(PP_COLOR_BEZ)
 				for(var _i=0; _i<array_length(_lines);_i++)
 				{
 					if _lines[_i][$"h1"] != undefined
@@ -596,10 +637,31 @@ function PathPlus(_path = []) constructor
 	{
 		var _l = path_get_number(path)
 		polyline = []
+		if path_get_kind(path)  
+		{
+			if _bake_smooth
+			{
+				var _t = 1 / (precision * _l)
+				
+				for(var _i= 0; _i < 1; _i+= _t)
+				{
+					var _point = {}
+					_point.x = path_get_x(path,_i)
+					_point.y = path_get_y(path,_i)	
+					if _keep_speed _point.speed = path_get_speed(path,_i)
+			
+					_point.cached	= false
+					array_push(polyline,_point)
+				}
+				
+				return
+			}
+		}
+		
 		for(var _i= 0; _i < _l; _i++)
 		{
 			var _point = {}
-			_point.x = path_get_point_x(path,_i)	
+			_point.x = path_get_point_x(path,_i)
 			_point.y = path_get_point_y(path,_i)	
 			if _keep_speed _point.speed = path_get_speed(path,_i)
 			
@@ -608,7 +670,7 @@ function PathPlus(_path = []) constructor
 		}
 		_cache_gen  =	false
 		
-		return self
+		return 
 	}
 	///Transforms all the points in cache into control points of a GM Path
 	static BakeToPath = function()
@@ -995,21 +1057,6 @@ function PathPlus(_path = []) constructor
 
 }
 
-function PathPlus_Point() constructor
-{
-	x = 0 ;
-	y = 0 ;
-	speed = 0 ;
-	cached = false;
-	
-	static MakeFromPath = function(_path, _index , _keep_speed)
-	{
-			x = path_get_point_x(_path,_index)	
-			y = path_get_point_y(_path,_index)	
-			if _keep_speed speed = path_get_speed(_path,_index)
-	}
-}
-
 /**
  * Private function used by PathPlus
   */
@@ -1124,4 +1171,12 @@ function _array_clean(array)
 	}
 	
 	return _new_array
+}
+
+function __pathplus_show_debug(_text)
+{
+	if SHOW_DEBUG_MESSAGES
+	{
+		show_debug_message(_text)	
+	}
 }

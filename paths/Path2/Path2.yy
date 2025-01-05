@@ -2,7 +2,7 @@
   "$GMPath":"",
   "%Name":"Path2",
   "closed":false,
-  "kind":0,
+  "kind":1,
   "name":"Path2",
   "parent":{
     "name":"Paths",
@@ -24,7 +24,7 @@
     {"speed":100.0,"x":677.0,"y":307.25,},
     {"speed":100.0,"x":584.0,"y":438.25,},
   ],
-  "precision":4,
+  "precision":2,
   "resourceType":"GMPath",
   "resourceVersion":"2.0",
 }
