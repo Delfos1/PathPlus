@@ -55,7 +55,7 @@ function PathPlus(_path = []) constructor
 	
 	#region Polyline Basics
 	/// Adds point to the Polyline
-	static AddPoint		= function(_x,_y,_optional_vars = {}) 
+	static AddPoint				= function(_x,_y,_optional_vars = {}) 
 	{
 		l++
 		
@@ -69,7 +69,7 @@ function PathPlus(_path = []) constructor
 		return self
 	}
 	/// Inserts a point to the polyline at the n position
-	static InsertPoint	= function(n,_x,_y,_optional_vars = {}) 
+	static InsertPoint			= function(n,_x,_y,_optional_vars = {}) 
 	{
 		if polyline[n].x== _x && polyline[n].y== _y return
 		if n == 0 && closed && (polyline[l-1].x== _x && polyline[l-1].y== _y)  {return}
@@ -89,7 +89,7 @@ function PathPlus(_path = []) constructor
 		return self
 	}
 	/// Removes the point on the polyline at the n position
-	static RemovePoint	= function(n,_amount = 1) 
+	static RemovePoint			= function(n,_amount = 1) 
 	{
 		n = clamp(n,0,l-1)
 
@@ -103,7 +103,7 @@ function PathPlus(_path = []) constructor
 		return self
 	}
 	/// Changes the point on the polyline at the n position
-	static ChangePoint	= function(n,_x,_y) 
+	static ChangePoint			= function(n,_x,_y) 
 	{
 		n = clamp(n,0,l-1)
 		var	_prevx = polyline[n].x,
@@ -141,7 +141,7 @@ function PathPlus(_path = []) constructor
 		return self
 	}
 	/// Translates the n point on the polyline relative to its current position
-	static TranslatePoint	= function(n,_x,_y) 
+	static TranslatePoint		= function(n,_x,_y) 
 	{
 		n = clamp(n,0,l-1)
 		_x += polyline[n].x				
@@ -166,7 +166,7 @@ function PathPlus(_path = []) constructor
 		return self
 	}
 	//noise
-	static AddNoise		= function(_amount)
+	static AddNoise				= function(_amount)
 	{
 		var _l = array_length(cache)
 		for(var i = 0 ; i<_l ; i++ )
@@ -176,7 +176,7 @@ function PathPlus(_path = []) constructor
 		}
 	}
 	//simplify
-	static Simplify = function (_epsilon=undefined){
+	static Simplify				= function (_epsilon=undefined){
 
 	var _points = polyline
 	var _start = 0
@@ -219,7 +219,7 @@ function PathPlus(_path = []) constructor
 
 }
 	
-	static GetLength = function(){
+	static GetLength			= function(){
 		
 		var _array = type	==	PATHPLUS.LINEAR ? polyline : cache ,
 		_l2 = array_length(_array),
@@ -233,7 +233,7 @@ function PathPlus(_path = []) constructor
 		
 		return _pixel_length
 	}
-	//closest point on path
+	
 	#endregion
 	#region Path Wrappers
 	
@@ -310,6 +310,7 @@ function PathPlus(_path = []) constructor
 	}
 	
 	#endregion
+	
 	#region Bezier Handles
 	
 	/// Changes the position of a bezier handle
@@ -433,8 +434,7 @@ function PathPlus(_path = []) constructor
 		if _handle == undefined return;
 		return		point_direction(polyline[_n].x, polyline[_n].y, _handle.x,_handle.y) ;
 	}
-	// RotateHandle
-	//Stretch handle
+
 	#endregion
 
 	//static ChangeSpeedFalloff = function(n,_speed,_falloff = 0.2){}
@@ -499,7 +499,7 @@ function PathPlus(_path = []) constructor
 			return
 		}
 		// If type is linear or we are forcing polyline, assign the polyline array, otherwise draw from cache
-		var _lines = type == PATHPLUS.LINEAR || _force_poly ? polyline : cache
+		var _lines =  _force_poly ? polyline : cache  // type == PATHPLUS.LINEAR ||
 		
 		var _c1 = draw_get_color()
 		var _len = array_length(_lines)
@@ -520,7 +520,7 @@ function PathPlus(_path = []) constructor
 				draw_set_color(PP_COLOR_INTR)
 				draw_circle(_x+_lines[_i].x,_y+_lines[_i].y,2,false)
 				draw_set_color(PP_COLOR_NORMAL)
-				if type != PATHPLUS.LINEAR
+				if type != PATHPLUS.GM_SMOOTH
 				{	// get normal and extend from x, and draw it
 					var x1 = _x+_lines[_i].x+lengthdir_x(6,_lines[_i].normal)
 					var y1 =_y+_lines[_i].y+lengthdir_y(6,_lines[_i].normal)
@@ -563,7 +563,8 @@ function PathPlus(_path = []) constructor
 	
 	static GenerateCache	= function()
 	{
-		if type == PATHPLUS.LINEAR || _cache_gen return
+		//if type == PATHPLUS.LINEAR ||
+		if _cache_gen return
 		
 		var _t = 1/precision 
 		cache = []
@@ -572,6 +573,16 @@ function PathPlus(_path = []) constructor
 		{ 
 			switch(type)
 			{
+				case PATHPLUS.LINEAR:
+				
+						var _point ={};
+						
+						_point.x = lerp(polyline[floor(_i)].x,polyline[floor(_i+1)%l].x,frac(_i))
+						_point.y = lerp(polyline[floor(_i)].y,polyline[floor(_i+1)%l].y,frac(_i))
+						_point.transversal = point_direction(polyline[floor(_i)].x,polyline[floor(_i)].y,polyline[floor(_i+1)%l].x,polyline[floor(_i+1)%l].y)
+						_point.normal = _point.transversal + 90
+				break;
+				
 				case PATHPLUS.BEZIER:
 						var _point =	__bezier_point(polyline[floor(_i)],polyline[floor(_i+1)%l],frac(_i))
 				break;
@@ -597,7 +608,7 @@ function PathPlus(_path = []) constructor
 			{
 				_point.speed = 100
 			}
-					
+			
 			cache[_n]= _point
 			
 			 if ( !closed && _i >= l-1 ) break
@@ -1053,7 +1064,6 @@ function PathPlus(_path = []) constructor
 			return point
 		}	
 	#endregion
-	
 
 }
 
