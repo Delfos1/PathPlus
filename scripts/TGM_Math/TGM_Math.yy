@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"scr_simplify",
+  "%Name":"TGM_Math",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"scr_simplify",
+  "name":"TGM_Math",
   "parent":{
-    "name":"paths",
-    "path":"folders/Scripts/paths.yy",
+    "name":"Code",
+    "path":"folders/Scripts/PathPlus/Dependencies/TurboGML/Code.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

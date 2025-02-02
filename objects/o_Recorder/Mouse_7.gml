@@ -1,1 +1,2 @@
 draw = !draw
+trigger = true

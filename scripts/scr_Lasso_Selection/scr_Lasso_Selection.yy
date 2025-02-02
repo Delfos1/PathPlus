@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_Lasso_Selection",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"Implementations",
+    "path":"folders/Scripts/PathPlus/Implementations.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

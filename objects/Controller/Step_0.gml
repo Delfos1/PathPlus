@@ -93,6 +93,7 @@ if input_check_double_pressed("left_click")
 		RemakeSelectablePoints()
 	}
 }
+
 if input_check_pressed("left_click")
 {
 	// If clicking when hovering over a slectable element, dragging an element or colliding witha  point

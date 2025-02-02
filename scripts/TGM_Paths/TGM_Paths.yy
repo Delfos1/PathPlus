@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"scr_PathPlus",
+  "%Name":"TGM_Paths",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"scr_PathPlus",
+  "name":"TGM_Paths",
   "parent":{
-    "name":"PathPlus",
-    "path":"folders/Scripts/PathPlus.yy",
+    "name":"Code",
+    "path":"folders/Scripts/PathPlus/Dependencies/TurboGML/Code.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

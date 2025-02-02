@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"scr_record_path",
+  "%Name":"scr_selectable_points",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"scr_record_path",
+  "name":"scr_selectable_points",
   "parent":{
     "name":"Implementations",
     "path":"folders/Scripts/PathPlus/Implementations.yy",

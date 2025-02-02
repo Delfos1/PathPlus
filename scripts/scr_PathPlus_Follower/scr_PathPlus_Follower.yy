@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"scr_PathPlus",
+  "%Name":"scr_PathPlus_Follower",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"scr_PathPlus",
+  "name":"scr_PathPlus_Follower",
   "parent":{
     "name":"PathPlus",
     "path":"folders/Scripts/PathPlus.yy",

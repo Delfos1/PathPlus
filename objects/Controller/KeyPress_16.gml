@@ -1,0 +1,1 @@
+closest = pathplus.polyline[pathplus.GetClosestToCoord(mouse_x,mouse_y)]
