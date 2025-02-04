@@ -1,6 +1,6 @@
 enum PP_FOLLOW { FORWARD=1, BACKWARD=-1, BOUNCE ,STOP,CYCLE,CONTINUE }
 
-function PathPlusFollower(pathplus,_relative = false) constructor
+function PathPlusFollower(pathplus,_xrelative = 0,_yrelative = 0) constructor
 {
 	if !is_instanceof(pathplus,PathPlus) 
 	{
@@ -13,20 +13,21 @@ function PathPlusFollower(pathplus,_relative = false) constructor
 	
 	x					= 0 
 	y					= 0
-	x_start				= !_relative ? 0 : other.x
-	y_start				= !_relative ? 0 : other.y
+	x_start				= _xrelative
+	y_start				= _yrelative 
 	direction			= PP_FOLLOW.FORWARD
 	on_end				= PP_FOLLOW.STOP
 	location_on_path	= 0
 	curr_speed			= path.polyline[0].speed /100
-	speed				= 1
+	speed				= 10
+	min_speed			= 1
 	normal				= path.polyline[0].normal
 	transversal			= path.polyline[0].transversal
 	
-	static SetSpeed = function(_speed)
+	static SetSpeed = function(_min,_max)
 	{
-		speed				= _speed
-		
+		speed				= _max
+		min_speed				= _min
 		return self
 	}
 	
@@ -76,7 +77,8 @@ function PathPlusFollower(pathplus,_relative = false) constructor
 			path.GenerateCache()
 		}
 	
-		_step_length = ( (speed*curr_speed )/ path.pixel_length) * (_step_length*direction)
+		var _spd = lerp(min_speed,speed,curr_speed)
+		_step_length = (  _spd / path.pixel_length) * (_step_length*direction)
 	
 		location_on_path += _step_length
 
@@ -126,7 +128,7 @@ function PathPlusFollower(pathplus,_relative = false) constructor
 		return StepForward(_step_length, _cache )
 	}
 	
-	static GenerateACurve = function(_cache = true)
+	static GenerateACurve = function(_curve_name ,_cache = true)
 	{
 		var _step_length , 
 		_location = direction == PP_FOLLOW.FORWARD ? 0 : 1 ,
@@ -137,6 +139,21 @@ function PathPlusFollower(pathplus,_relative = false) constructor
 			path.GenerateCache()
 		}
 	
+		var content = {
+			curve_name : string(_curve_name) , 
+			channels : [{name:"x" , type : animcurvetype_linear , iterations : 8},
+						{name:"y" , type : animcurvetype_linear , iterations : 8},
+						{name:"normal" , type : animcurvetype_linear , iterations : 8},
+						{name:"transversal" , type : animcurvetype_linear , iterations : 8}]
+		}
+	
+		var _animcurve = animcurve_really_create(content),
+			_points_x_array = [],
+			_points_y_array = [],
+			_points_normal_array = [],
+			_points_transversal_array = []
+			
+		
 		while (_location > 1 && direction == PP_FOLLOW.FORWARD) || (_location < 0  && direction == PP_FOLLOW.BACKWARD)
 		{
 			_step_length = ( (speed*_curr_speed )/ path.pixel_length) * direction
@@ -151,7 +168,18 @@ function PathPlusFollower(pathplus,_relative = false) constructor
 			transversal = direction == PP_FOLLOW.FORWARD ? _point.transversal : (_point.transversal+180)%360
 			
 			// Add points
+			animcurve_point_add(_points_x_array,_location,x)
+			animcurve_point_add(_points_y_array,_location,y)
+			animcurve_point_add(_points_normal_array,_location,normal)
+			animcurve_point_add(_points_transversal_array,_location,transversal)
 		}
+		
+		animcurve_points_set(_animcurve,"x",_points_x_array)
+		animcurve_points_set(_animcurve,"y",_points_y_array)
+		animcurve_points_set(_animcurve,"normal",_points_normal_array)
+		animcurve_points_set(_animcurve,"transversal",_points_transversal_array)
+		
+		return _animcurve
 	}
 	
 }

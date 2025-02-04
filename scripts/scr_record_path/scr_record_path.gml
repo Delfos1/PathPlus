@@ -11,16 +11,18 @@ function PathRecord(x,y){
 	start_time ??= current_time
 	
 	
-	var _time = (current_time-start_time) 
+	var _time = (current_time-start_time),
+	_frames = 0 ,
+	_pixels_per_frame = 0
 
-		_pixels_per_frame = 1
+		
 	if l != -1 
 	{
 		var _distance = point_distance(x,y,rec.polyline[l].x,rec.polyline[l].y) //compare current position to previous 
 		if  _distance < sensitivity		return
-		show_debug_message($"distance = {_distance}, {l}")
-		var _t = _time - rec.polyline[l].time
-		_pixels_per_frame = _distance / (_t/(game_get_speed(gamespeed_microseconds)*0.001))
+		var _t = _time - rec.polyline[l].time  
+		_frames =  _t/(game_get_speed(gamespeed_microseconds)*0.001) 
+		 _pixels_per_frame = _distance /_frames
 	}
 	
 	l++
@@ -53,19 +55,28 @@ function PathRecordStop(_record_speed = true,smooth= false,prec= 8,_closed=false
 	//simplify path
 	_pathPlus.Simplify(.02)
 	_pathPlus.SetCatmullRom(1,0.2)
-	//_pathPlus.GetLength()
-	
-	//generate path resource
+
 	for(var _i = 0 ; _i<_l;_i++)
 	{
 		var _speed = 100
-		if _record_speed && _i<_l //calculate speed based on percentage
+		if _record_speed && _i==0
 		{
-			var _speed =  (_p[_i].ppf/_spdmax)*100
+			var _d = _p[_i+1].l 
+			var _f = _p[_i+1].time
+			var ppf = _d / ( _f / (game_get_speed(gamespeed_microseconds)*0.001) )
+			var _speed =  (ppf/_spdmax)*100
+		}
+		if _record_speed && _i>0 //calculate speed based on percentage
+		{
+			var _d = _p[_i].l - _p[_i-1].l
+				var _f = _p[_i].time - _p[_i-1].time
+			var ppf = _d / (_f/ (game_get_speed(gamespeed_microseconds)*0.001) )
+			var _speed =  (ppf/_spdmax)*100
 		}
 		_p[_i].speed = _speed
 	}
 		_pathPlus.SetClosed(_closed).SetPrecision(2).BakeToPath()
+		_pathPlus.GenerateCache()
 		
 
 	//restart statics	

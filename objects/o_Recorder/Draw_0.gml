@@ -1,12 +1,23 @@
+
 PathRecordDraw()
 if pathplus != undefined 
 {
 	pathplus.DebugDraw(0,0,true,false,false)
 }
-draw_self()
 
+if stage != 3
+{
+	draw_self()
+	draw_set_halign(fa_center)
+	draw_text(700,200,"Hold click on the moon and move it around to record the motion")
+
+}
 if stage == 3
 {
+	draw_text(700,200,"Click on the points and move them around to change the path.")
+	draw_text(700,250,"Double-Click on the line to insert points")
+	draw_text(700,300,"Press Delete Key to remove points. Press + Key and Double Click anywhere to add a new point")
+	
 	pathplus.DebugDraw(0,0,true)
 
 	LassoDraw()

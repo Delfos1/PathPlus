@@ -70,7 +70,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			__pathplus_show_debug("▉╳▉✦ PathPlus Error ✦▉╳▉: Wrong type provided")
 			return self
 		}
-		precision = _precision*2
+		precision = round(_precision*2)
+		_precision = clamp(round(_precision),1,8)
 		path_set_precision(path,_precision)
 		_cache_gen  =	false
 		
@@ -88,8 +89,15 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		
 		closed = _closed
 		path_set_closed(path,_closed)
+		
 		_cache_gen  =	false
-		_regen()
+		_length_gen  =	false
+		
+		if PP_AUTO_GEN_PROPS
+		{
+			_regen()
+			GetLength(n,n+1)	
+		}
 		return self
 	}
 	/// Adds point at the end of the Polyline
@@ -185,7 +193,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		return self
 	}
 	/// Changes the point on the polyline at the n position
-	static ChangePoint			= function(n,_x,_y) 
+	static ChangePoint			= function(n,_x,_y,_speed = undefined) 
 	{
 		if !is_real(_x) || !is_real(_y) || !is_real(n)
 		{
@@ -198,6 +206,10 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			_prevy = polyline[n].y		
 		polyline[n].x		= _x
 		polyline[n].y		= _y
+		if _speed != undefined
+		{
+			polyline[n].speed		= _speed
+		}
 
 		if type == PATHPLUS.BEZIER
 		{
@@ -268,7 +280,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 	#endregion
 	
 	#region Polyline Advanced Operations
-	// Adds noise to the Cache channel. Cache can be regenerated to recover the original line
+	/// Adds noise to the Cache channel. Cache can be regenerated to recover the original line
 	static AddNoise				= function(_amount)
 	{
 		if !is_real(_amount)
@@ -410,7 +422,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		}
 		else
 		{
-			return _array[_end].l - _array[_start].l
+			return (_array[_end].l - _array[_start].l)
 		}
 		
 		
@@ -883,9 +895,9 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_regen()
 	}
 	/// Generates a cache of the curve. Use if you want a different kind of cache from the standard or if you deactivated automatic cache from the Config file
-	static GenerateCache	= function(_precision =precision , _even_distribution = false )
+	static GenerateCache	= function(_precision =precision , _even_distribution = false , _force=false )
 	{
-		if _cache_gen || l <= 1 return
+		if (_cache_gen && !_force )|| l <= 1  return
 		
 		var _t = 1/_precision 
 		cache = []
@@ -894,7 +906,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		var _length_total = 0
 		for (var _i= 0 ; _i < l; _i++ )
 		{ 
-			if ( !closed && _i >= l-1 ) break
+			if ( !closed && _i == l-1 ) break
 			_pixel_length[_i]=0
 			for(var _stp = 0 ; _stp <=1 ; _stp+= _t)
 			{
@@ -923,8 +935,9 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 							}
 					break;
 				}
-
 				if !_even_distribution {
+					
+
 					if polyline[_i][$ "speed"] != undefined && polyline[(_i+1)%l][$ "speed"] != undefined 
 					{
 						_point.speed = lerp(polyline[_i].speed,polyline[(_i+1)%l].speed,_stp)
@@ -1105,7 +1118,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		if array_length(cache) < 2 return
 		path_clear_points(path)
 		path_set_closed(path,closed)
-		path_set_precision(path,precision)
+		path_set_precision(path,clamp(precision/2,1,8))
 		path_set_kind(path,0)
 		
 		for (var _i= 0; _i < array_length(cache); _i++)
@@ -1155,7 +1168,6 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			// Cycle through all points in array
 			for(var _i= 1; _i < l; _i++)
 			{			
-				// if _i is within the segment being changed, save the length difference. 
 				polyline[_i-1].transversal		= point_direction(polyline[_i-1].x,polyline[_i-1].y,polyline[_i].x,polyline[_i].y)
 				polyline[_i-1].normal			= polyline[_i-1].transversal + 90
 			}	

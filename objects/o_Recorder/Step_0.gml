@@ -21,7 +21,7 @@ else if trigger
 			with _guide
 			{
 				follow = new PathPlusFollower(other.pathplus) 
-				follow.SetActionOnEnd(PP_FOLLOW.BOUNCE).SetSpeed(other.pathplus.path_speed)
+				follow.SetActionOnEnd(PP_FOLLOW.BOUNCE).SetSpeed(1,other.pathplus.path_speed)
 			}
 			RemakeSelectablePoints()
 		}
