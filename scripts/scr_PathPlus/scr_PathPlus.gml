@@ -568,7 +568,11 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			_ind = floor((_max + _min)/2);
 					
 			if _ind+1	== l
-			break
+			{
+				if	polyline[_ind].l > _l				_ind--
+				break
+			}
+			
 			//  If current point is equal to the value, or the value is between this and the next point
 			if  polyline[_ind].l <= _l && polyline[_ind+1].l > _l 
 			{
@@ -895,19 +899,17 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_regen()
 	}
 	/// Generates a cache of the curve. Use if you want a different kind of cache from the standard or if you deactivated automatic cache from the Config file
-	static GenerateCache	= function(_precision =precision , _even_distribution = false , _force=false )
+	static GenerateCache	= function(_precision =precision , _force=false )
 	{
 		if (_cache_gen && !_force )|| l <= 1  return
 		
 		var _t = 1/_precision 
 		cache = []
 		var _n = 0
-		var _pixel_length = []
 		var _length_total = 0
 		for (var _i= 0 ; _i < l; _i++ )
 		{ 
 			if ( !closed && _i == l-1 ) break
-			_pixel_length[_i]=0
 			for(var _stp = 0 ; _stp <=1 ; _stp+= _t)
 			{
 				switch(type)
@@ -935,78 +937,6 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 							}
 					break;
 				}
-				if !_even_distribution {
-					
-
-					if polyline[_i][$ "speed"] != undefined && polyline[(_i+1)%l][$ "speed"] != undefined 
-					{
-						_point.speed = lerp(polyline[_i].speed,polyline[(_i+1)%l].speed,_stp)
-					}
-					else
-					{
-						_point.speed = 99
-					}
-				}
-				cache[_n]= _point
-				
-				if _stp != 0
-				{
-					var _d				=	point_distance(cache[_n-1].x,cache[_n-1].y,cache[_n].x,cache[_n].y) 
-					_pixel_length[_i]	+=	_d
-					_length_total		+=	_d
-				}
-
-				cache[_n].l = _length_total
-				if _stp <1 {_n++}
-			}
-			polyline[(_i+1)%l].l	= _length_total
-		}
-		pixel_length = _length_total
-		var _px= _length_total/array_length(cache)
-		_cache_gen = true	
-		_length_gen = true
-		if !_even_distribution return
-		/// Evenly distribute points along the curve
-		
-		cache = []
-		_n = 0
-		_length_total	=0
-		for (var _i= 0 ; _i < l; _i++ )
-		{ 
-			if ( !closed && _i >= l-1 ) break
-			_t = 1/round(_pixel_length[_i] / _px)
-
-			for(var _stp = 0 ; _stp <= 1 ; _stp+= _t)
-			{
-				switch(type)
-				{
-					case PATHPLUS.LINEAR:
-				
-							var _point ={};
-							
-							_point.x = lerp(polyline[_i].x,polyline[(_i+1)%l].x,_stp)
-							_point.y = lerp(polyline[_i].y,polyline[(_i+1)%l].y,_stp)
-							_point.transversal = point_direction(polyline[_i].x,polyline[_i].y,polyline[(_i+1)%l].x,polyline[(_i+1)%l].y)
-							_point.normal = _point.transversal + 90
-		
-					break;
-				
-					case PATHPLUS.BEZIER:
-							var _point =	__bezier_point(polyline[_i],polyline[(_i+1)%l],_stp)
-					break;
-					case PATHPLUS.CATMULL_ROM:
-							if polyline[_i][$"segment"] == undefined || ( !closed && _i >= l-1 )
-							{
-								var _point = 	polyline[_i] 
-								_point.transversal = cache[_n-1].transversal
-								_point.normal =  cache[_n-1].normal
-							}
-							else
-							{
-								var _point =	__catmull_rom_point(polyline[_i].segment,_stp)
-							}
-					break;
-				}
 
 				if polyline[_i][$ "speed"] != undefined && polyline[(_i+1)%l][$ "speed"] != undefined 
 				{
@@ -1016,7 +946,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 				{
 					_point.speed = 99
 				}
-
+				
 				cache[_n]= _point
 				
 				if _stp != 0
@@ -1024,13 +954,17 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 					var _d				=	point_distance(cache[_n-1].x,cache[_n-1].y,cache[_n].x,cache[_n].y) 
 					_length_total		+=	_d
 				}
-				
+
 				cache[_n].l = _length_total
 				if _stp <1 {_n++}
-				
 			}
+			polyline[(_i+1)%l].l	= _length_total
 		}
-	
+		pixel_length = _length_total
+
+		_cache_gen = true	
+		_length_gen = true
+			
 	return
 	}
 	/// Generates a polyline out of the path
