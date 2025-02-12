@@ -626,7 +626,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			}
 	
 		_point.speed = lerp(polyline[_ind].speed,polyline[_ind2].speed,_t)
-		
+		_point.l = pixel_length * _n
 	return _point
 	}
 	/// Gets a point along the path, from 0 to 1, from the cache (faster)
@@ -684,7 +684,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_point.transversal = lerp_angle(cache[_ind].transversal,cache[_ind2].transversal,_t)
 		_point.normal = _point.transversal + 90
 		_point.speed = lerp(cache[_ind].speed,cache[_ind2].speed,_t)
-		
+		_point.l = pixel_length * _n
 		return _point
 	}
 	#endregion
@@ -912,6 +912,24 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			if ( !closed && _i == l-1 ) break
 			for(var _stp = 0 ; _stp <=1 ; _stp+= _t)
 			{
+				if _stp == 0
+				{
+					if type == PATHPLUS.CATMULL_ROM && ( polyline[_i][$"segment"] == undefined || ( !closed && _i >= l-1 ) )
+					{
+						var _point = 	polyline[_i] 
+						_point.transversal = cache[_n-1].transversal
+						_point.normal =  cache[_n-1].normal
+					}
+					else
+					{
+						var _point = polyline[_i] 
+					}
+					cache[_n]	= _point
+					
+				}
+				else
+				{
+									
 				switch(type)
 				{
 					case PATHPLUS.LINEAR:
@@ -949,12 +967,10 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 				
 				cache[_n]= _point
 				
-				if _stp != 0
-				{
 					var _d				=	point_distance(cache[_n-1].x,cache[_n-1].y,cache[_n].x,cache[_n].y) 
 					_length_total		+=	_d
+							
 				}
-
 				cache[_n].l = _length_total
 				if _stp <1 {_n++}
 			}
@@ -966,6 +982,41 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_length_gen = true
 			
 	return
+	}
+		/// Generates a cache of the path at even intervals, in pixels. Samples from an inbetween cache that can be generated beforehand.
+	static GenerateCacheEven = function(_pxlength)
+	{
+		if !_cache_gen
+		{
+			GenerateCache()
+		}
+		
+		if _pxlength > pixel_length/2 return
+		
+		var _t = _pxlength / pixel_length , _n = 0, _cache = array_create( floor(pixel_length /_pxlength) ),
+		_d = 0 , _length_total = 0
+		
+
+		for(var i = 0; i <=1 ; i += _t )	
+		{
+			_cache[_n] = Sample(i)
+			_n++
+			if i == 0 continue 
+			
+			 _d				=	point_distance(_cache[_n-2].x,_cache[_n-2].y,_cache[_n-1].x,_cache[_n-1].y) 
+			_length_total		+=	round(_d)
+			_cache[_n-1].l = _length_total
+		}
+		
+		// cap the path in case the latest sample was behind the end
+		if (i > 1 && i-_t < 1) && !closed
+		{
+			_cache[_n] = SampleFromCache(1)
+			_cache[_n].l = pixel_length
+		}
+		
+		cache = _cache
+		_cache_gen = true	
 	}
 	/// Generates a polyline out of the path
 	static PathToPoly		= function(_bake_smooth = false , _keep_speed =true)
