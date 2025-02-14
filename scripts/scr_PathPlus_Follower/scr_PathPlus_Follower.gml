@@ -1,3 +1,5 @@
+/// Feather ignore all
+
 enum PP_FOLLOW { FORWARD=1, BACKWARD=-1, BOUNCE ,STOP,CYCLE,CONTINUE }
 
 function PathPlusFollower(pathplus,_xrelative = 0,_yrelative = 0) constructor

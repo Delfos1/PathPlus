@@ -1,3 +1,5 @@
+/// Feather ignore all
+
 enum PATHPLUS {LINEAR, BEZIER,CATMULL_ROM,GM_SMOOTH }
 /// PATH PLUS 
 
@@ -74,7 +76,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_precision = clamp(round(_precision),1,8)
 		path_set_precision(path,_precision)
 		_cache_gen  =	false
-		
+		_length_gen	=	false
 		return self
 	}
 	static SetClosed			= function(_closed)
@@ -434,7 +436,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 				if !is_real(_n)
 		{
 			__pathplus_show_debug("▉╳▉ ✦PathPlus✦ Error ▉╳▉: Wrong type provided")
-			return self
+			return 
 		}
 
 		var _l = pixel_length * _n ,
@@ -471,7 +473,23 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 	return _ind
 	
 	}
-	
+	/// Gets the relative location of a point index _i in the path. Returns a normalized position in the path, from 0 to 1
+	/// @arg _i The point´s index	
+	static GetPointLocation = function(_i)
+	{
+		if !is_real(_i) || _i >= l 
+		{
+			__pathplus_show_debug("▉╳▉ ✦PathPlus✦ Error ▉╳▉: Wrong type provided")	
+			return
+		}
+		
+		if PP_AUTO_GEN_PROPS && !_length_gen	
+		{
+			GetLength()
+		}
+		
+		return  polyline[_i].l / pixel_length
+	}
 	/// Gets the closest point on the path to a set of room coordinates. Returns an index from the polyline array or a length between 0 and 1 representing the extension of the path
 	/// @arg _x Position x on room space
 	/// @arg _y Position y on room space
@@ -774,7 +792,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 	/// @param {Bool}  _handle The handle to change. true: handle 1 (with-flow handle) false: handle 2 (counter-flow handle)
 	/// @param {Bool}  _break Whether the opposite handle will remain where it is (true) or reposition to mantain curve continuity (false)
 	/// @param {Bool}  _symmetric Whether the opposite handle will reposition to remain equidistant from the changed handle (true) or keep its current length from point (false)
-	static ChangeBezierHandle = function(_n,x,y,_handle=true,_break = false,_symmetric = false)
+	static ChangeBezierHandle = function(_n,x,y,_handle=true,_break = false,_symmetric = true)
 	{
 		if type != PATHPLUS.BEZIER return;
 		
@@ -797,8 +815,10 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			_other_handle.y =  polyline[_n].y+lengthdir_y(_length,_angle)
 		}
 		_cache_gen  =	false
+		_length_gen	=	false
+		/*
 		 polyline[max(0,(_n-1))].cached = false
-		 polyline[_n].cached = false
+		 polyline[_n].cached = false*/
 		return self
 	}
 	/// Changes the position of a bezier handle to a position relative to its control point
@@ -868,6 +888,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			_other_handle.y =  polyline[_n].y+lengthdir_y(_length,_angle)
 		}
 		_cache_gen  =	false
+		_length_gen	=	false
 		return self
 	}
 	

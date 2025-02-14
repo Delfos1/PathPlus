@@ -52,6 +52,7 @@ __pathplus_show_debug("▉✦✧✦ Using PathPlus v 2.0 - by Delfos ✦✧✦�
 //	Show point number while Debug Drawing
 #macro PP_SHOW_DEBUG_PT_NUMBER	false		
 
+//  Determines the size of the points while Debug Drawing
 #macro PP_SHOW_DEBUG_PT_SIZE	3	 // Default : 3
 
 

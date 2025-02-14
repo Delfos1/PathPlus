@@ -14,9 +14,10 @@ if stage != 3
 }
 if stage == 3
 {
-	draw_text(700,200,"Click on the points and move them around to change the path.")
-	draw_text(700,250,"Double-Click on the line to insert points")
-	draw_text(700,300,"Press Delete Key to remove points. Press + Key and Double Click anywhere to add a new point")
+	draw_text(700,150,"Click on the points and move them around to change the path.")
+	draw_text(700,180,"Double-Click on the line to insert points")
+	draw_text(700,210,"Press Delete Key to remove points. Press + Key and Double Click anywhere to add a new point")
+	draw_text(700,240,"Press 1 to set the curve to Catmull-Rom. Press 2 to set the curve to Bezier")
 	
 	pathplus.DebugDraw(0,0,true)
 
