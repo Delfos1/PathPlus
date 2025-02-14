@@ -6,7 +6,7 @@
   "name":"Scr_PathPlus_Config",
   "parent":{
     "name":"PathPlus",
-    "path":"folders/Scripts/PathPlus.yy",
+    "path":"folders/PathPlus.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

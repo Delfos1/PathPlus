@@ -6,7 +6,7 @@
   "name":"scr_animcurve_points",
   "parent":{
     "name":"Animcurve",
-    "path":"folders/Scripts/PathPlus/Dependencies/Animcurve.yy",
+    "path":"folders/PathPlus/Dependencies/Animcurve.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

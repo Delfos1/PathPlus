@@ -6,7 +6,7 @@
   "name":"scr_Lasso_Selection",
   "parent":{
     "name":"Implementations",
-    "path":"folders/Scripts/PathPlus/Implementations.yy",
+    "path":"folders/PathPlus/Implementations.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

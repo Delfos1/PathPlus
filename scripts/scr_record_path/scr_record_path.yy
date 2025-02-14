@@ -6,7 +6,7 @@
   "name":"scr_record_path",
   "parent":{
     "name":"Implementations",
-    "path":"folders/Scripts/PathPlus/Implementations.yy",
+    "path":"folders/PathPlus/Implementations.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
