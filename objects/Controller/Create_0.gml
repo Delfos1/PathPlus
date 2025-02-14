@@ -1,27 +1,25 @@
 // Transforms a path into a PathPlus with Catmull-Rom interpolation
 
 pathplus = new PathPlus(Path2)
-//pathplus.SetCatmullRom(.5,0.5)
+pathplus.SetCatmullRom(0,0)
 
-//pathplus.SetBSpline(2)
-pathplus.SetBezier()
 
+//pathplus.SetBezier()
 //pathplus.BakeToPath()
 
-
-
-/*
-window_set_fullscreen(true)
-display_reset(8, true);
-*/
+_guide = instance_create_layer(x,y,layer,guide)
+with _guide
+{
+	follow = new PathPlusFollower(other.pathplus) 
+	follow.SetActionOnEnd(PP_FOLLOW.BOUNCE).SetSpeed(1,10)
+			}
 gpu_set_texfilter(true)
 gpu_set_tex_mip_filter(tf_anisotropic)
 
 prev_mouse_x			= mouse_x
 prev_mouse_y			= mouse_y
 
-enum MOUSE_MODE {NORMAL, LASSO, HOVER, DRAG, ADD, INSERT}
-enum MOUSE_COLL {NONE, POINT, LINE, HANDLE}
+
 mouse_mode				= MOUSE_MODE.NORMAL
 points_selected			= []
 points_selectable		= []
@@ -29,7 +27,7 @@ handle_selected			= undefined
 handles_selectable		= []
 point_modification_mode = false
 hovered_on				= undefined
-
+closest					= undefined
 mouse_colliding			= MOUSE_COLL.NONE
 
 window_set_cursor(cr_none)
@@ -37,41 +35,10 @@ mouse_sprite = spr_pointer_a_ol
 
 
 
-function RemakeSelectablePoints()
-{
-	points_selectable = []
-	var _target = pathplus.polyline
-	for(var _i2=0 ;_i2<array_length(_target) ;  _i2++)
-	{
-		var _x = _target[_i2].x,
-			_y = _target[_i2].y
-	
-		array_push(points_selectable,[_i2,[_x,_y]])
-	}
-	if pathplus.type == PATHPLUS.BEZIER
-	{
-		handles_selectable		= []
-		for(var _i2=0 ;_i2<array_length(_target) ;  _i2++)
-		{
-			if _target[_i2][$"h1"] != undefined
-			{
-				_x = _target[_i2].h1.x
-				_y = _target[_i2].h1.y
-				array_push(handles_selectable,[[_i2,true],[_x,_y]])
-			}
-			if _target[_i2][$"h2"] != undefined
-			{
-				_x = _target[_i2].h2.x
-				_y = _target[_i2].h2.y
-				array_push(handles_selectable,[[_i2,false],[_x,_y]])
-			}
 
-		}
-	}
-	
-}
 
 LassoSelection(x,y)
 LassoEnd(0)
 
 RemakeSelectablePoints()
+

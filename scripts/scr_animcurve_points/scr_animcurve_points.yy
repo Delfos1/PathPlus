@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_animcurve_points",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_animcurve_points",
+  "parent":{
+    "name":"Animcurve",
+    "path":"folders/PathPlus/Dependencies/Animcurve.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

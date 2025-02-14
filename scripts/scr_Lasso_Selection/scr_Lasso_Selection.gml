@@ -1,4 +1,4 @@
-         
+       
 /// Records a polygon to be usde as a lasso selection  
 /// @param {Real}		x x coordinate of the new position
 /// @param {Real}		y y coordinate of the new position
@@ -10,7 +10,7 @@ function LassoSelection(x,y,_dis = 10){
 	static active = true
 	
 	active = true
-	if rec.l != 0
+	if rec.l > 1 
 	{
 		var _distance = point_distance(x,y,rec.polyline[rec.l-1].x,rec.polyline[rec.l-1].y) //compare current position to previous 
 		if  _distance < _dis		return
