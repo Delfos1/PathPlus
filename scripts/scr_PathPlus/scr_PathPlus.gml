@@ -976,6 +976,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 							}
 					break;
 				}
+				
 
 				if polyline[_i][$ "speed"] != undefined && polyline[(_i+1)%l][$ "speed"] != undefined 
 				{
@@ -1346,24 +1347,32 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 					}
 					else
 					{
-						var _dir = (point_direction(polyline[0].x,polyline[0].y,polyline[1].x,polyline[1].y) +180)%360
-
+						var _dir = point_direction(polyline[1].x,polyline[1].y,polyline[0].x,polyline[0].y) 
 						var _len = 1
 						_p1 =
 						{
 							x: lengthdir_x(_dir,_len)+polyline[0].x,
 							y: lengthdir_y(_dir,_len)+polyline[0].y
 						}
+						if _p1.x == polyline[0].x && _p1.y == polyline[0].y
+						{
+							_p1.x += 1
+						}
+						
 					}
 				}
 				else if _i == _length-1 && !closed // if second to last point and its open, create a phantom fourth point 
 				{
 					var _dir = point_direction(polyline[_i].x,polyline[_i].y,polyline[_i+1].x,polyline[_i+1].y)
-					var _len = point_distance(polyline[_i].x,polyline[_i].y,polyline[_i+1].x,polyline[_i+1].y)
+					var _len = 1
 					_p4 =
 					{
 						x: lengthdir_x(_dir,_len)+polyline[_i+1].x,
 						y: lengthdir_y(_dir,_len)+polyline[_i+1].y
+					}
+					if _p4.x == polyline[_i+1].x && _p4.y == polyline[_i+1].y
+					{
+						_p4.x += 1
 					}
 				}
 		
