@@ -283,20 +283,35 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 	
 	#region Polyline Advanced Operations
 	/// Adds noise to the Cache channel. Cache can be regenerated to recover the original line
-	static AddNoise				= function(_amount)
+	static AddNoise				= function(_amp,_freq=1)
 	{
-		if !is_real(_amount)
+		if !is_real(_amp) || !is_real(_freq)
 		{
 			__pathplus_show_debug("▉╳▉ ✦PathPlus✦ Error ▉╳▉: Wrong type provided")
 			return self
 		}
 		
 		if !_cache_gen && PP_AUTO_GEN_CACHE GenerateCache()
-		var _l = array_length(cache)
+		
+		var _l = array_length(cache) , 
+		_prev_noise = 0 ,
+		_nxt_noise	= 0 ,
+		_curr_noise = 0 
+		
+		_freq = clamp(round(_freq),1,_l)
+		
 		for(var i = 0 ; i<_l ; i++ )
 		{	
-			cache[i].x += random_range(-_amount,_amount)
-			cache[i].y += random_range(-_amount,_amount)
+			if i%_freq == 0
+			{
+				_prev_noise = _nxt_noise
+				_nxt_noise	= random_range(-_amp,_amp) 
+			}
+			_curr_noise = lerp(_prev_noise,_nxt_noise,(i%_freq)/_freq)
+			
+			
+			cache[i].x += lengthdir_x(_curr_noise,cache[i].normal)
+			cache[i].y += lengthdir_y(_curr_noise,cache[i].normal)
 		}
 		
 		return self
@@ -1351,13 +1366,10 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 						var _len = 1
 						_p1 =
 						{
-							x: lengthdir_x(_dir,_len)+polyline[0].x,
-							y: lengthdir_y(_dir,_len)+polyline[0].y
+							x: lengthdir_x(_len,_dir)+polyline[0].x,
+							y: lengthdir_y(_len,_dir)+polyline[0].y
 						}
-						if _p1.x == polyline[0].x && _p1.y == polyline[0].y
-						{
-							_p1.x += 1
-						}
+
 						
 					}
 				}
@@ -1367,13 +1379,10 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 					var _len = 1
 					_p4 =
 					{
-						x: lengthdir_x(_dir,_len)+polyline[_i+1].x,
-						y: lengthdir_y(_dir,_len)+polyline[_i+1].y
+						x: lengthdir_x(_len,_dir)+polyline[_i+1].x,
+						y: lengthdir_y(_len,_dir)+polyline[_i+1].y
 					}
-					if _p4.x == polyline[_i+1].x && _p4.y == polyline[_i+1].y
-					{
-						_p4.x += 1
-					}
+
 				}
 		
 			_p1 ??= polyline[_i-1] ;
@@ -1489,8 +1498,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 						var _len = point_distance(polyline[0].x,polyline[0].y,polyline[1].x,polyline[1].y)
 						_p1 =
 						{
-							x: lengthdir_x(_dir,_len)+polyline[0].x,
-							y: lengthdir_y(_dir,_len)+polyline[0].y
+							x: lengthdir_x(_len,_dir)+polyline[0].x,
+							y: lengthdir_y(_len,_dir)+polyline[0].y
 						}
 					}
 				}
@@ -1500,8 +1509,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 					var _len = point_distance(polyline[_i].x,polyline[_i].y,polyline[_i+1].x,polyline[_i+1].y)
 					_p4 =
 					{
-						x: lengthdir_x(_dir,_len)+polyline[_i+1].x,
-						y: lengthdir_y(_dir,_len)+polyline[_i+1].y
+						x: lengthdir_x(_len,_dir)+polyline[_i+1].x,
+						y: lengthdir_y(_len,_dir)+polyline[_i+1].y
 					}
 				}
 		
@@ -1537,8 +1546,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 						var _len = point_distance(polyline[0].x,polyline[0].y,polyline[1].x,polyline[1].y)
 						_p1 =
 						{
-							x: lengthdir_x(_dir,_len)+polyline[0].x,
-							y: lengthdir_y(_dir,_len)+polyline[0].y
+							x: lengthdir_x(_len,_dir)+polyline[0].x,
+							y: lengthdir_y(_len,_dir)+polyline[0].y
 						}
 					}
 				}
@@ -1548,8 +1557,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 					var _len = point_distance(polyline[_i].x,polyline[_i].y,polyline[_i+1].x,polyline[_i+1].y)
 					_p4 =
 					{
-						x: lengthdir_x(_dir,_len)+polyline[_i+1].x,
-						y: lengthdir_y(_dir,_len)+polyline[_i+1].y
+						x: lengthdir_x(_len,_dir)+polyline[_i+1].x,
+						y: lengthdir_y(_len,_dir)+polyline[_i+1].y
 					}
 				}
 		
@@ -1579,8 +1588,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 						var _len = point_distance(polyline[0].x,polyline[0].y,polyline[1].x,polyline[1].y)
 						_p1 =
 						{
-							x: lengthdir_x(_dir,_len)+polyline[0].x,
-							y: lengthdir_y(_dir,_len)+polyline[0].y
+							x: lengthdir_x(_len,_dir)+polyline[0].x,
+							y: lengthdir_y(_len,_dir)+polyline[0].y
 						}
 					}
 				}
@@ -1590,8 +1599,8 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 					var _len = point_distance(polyline[_i].x,polyline[_i].y,polyline[_i+1].x,polyline[_i+1].y)
 					_p4 =
 					{
-						x: lengthdir_x(_dir,_len)+polyline[_i+1].x,
-						y: lengthdir_y(_dir,_len)+polyline[_i+1].y
+						x: lengthdir_x(_len,_dir)+polyline[_i+1].x,
+						y: lengthdir_y(_len,_dir)+polyline[_i+1].y
 					}
 				}
 		
