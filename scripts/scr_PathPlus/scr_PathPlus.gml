@@ -935,16 +935,32 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 			{
 				if _stp == 0
 				{
-					if type == PATHPLUS.CATMULL_ROM && ( polyline[_i][$"segment"] == undefined || ( !closed && _i >= l-1 ) )
-					{
-						var _point = 	polyline[_i] 
-						_point.transversal = cache[_n-1].transversal
-						_point.normal =  cache[_n-1].normal
-					}
-					else
-					{
 						var _point = polyline[_i] 
-					}
+						
+						switch(type)
+						{
+							case PATHPLUS.LINEAR:
+
+							break;
+							case PATHPLUS.BEZIER:
+									var _point_transv =	__bezier_point(polyline[_i],polyline[(_i+1)%l],_stp)
+									_point.transversal = _point_transv.transversal
+									_point.normal = _point.transversal + 90
+							break;
+							case PATHPLUS.CATMULL_ROM:
+									if polyline[_i][$"segment"] == undefined || ( !closed && _i >= l-1 )
+									{
+										_point.transversal = cache[_n-1].transversal
+										_point.normal =  cache[_n-1].normal
+									}
+									else
+									{
+										var _point_transv =	__catmull_rom_point(polyline[_i].segment,_stp)
+										_point.transversal = _point_transv.transversal
+										_point.normal = _point.transversal + 90
+									}
+							break;
+						}
 					cache[_n]	= _point
 					
 				}
@@ -959,6 +975,13 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 							_point.y = lerp(polyline[_i].y,polyline[(_i+1)%l].y,_stp)
 							_point.transversal = point_direction(polyline[_i].x,polyline[_i].y,polyline[(_i+1)%l].x,polyline[(_i+1)%l].y)
 							_point.normal = _point.transversal + 90
+							if _stp-_t == 0 && _i > 0
+							{
+								
+								cache[_n-1].transversal	= lerp_angle(cache[_n-2].transversal,_point.transversal,.5)
+								cache[_n-1].normal = cache[_n-1].transversal + 90
+							}
+							
 					break;
 					case PATHPLUS.BEZIER:
 							var _point =	__bezier_point(polyline[_i],polyline[(_i+1)%l],_stp)
