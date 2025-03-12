@@ -1,11 +1,12 @@
 // Transforms a path into a PathPlus with Catmull-Rom interpolation
 
 pathplus = new PathPlus(Path2)
-pathplus.SetCatmullRom(0,0)
+//pathplus.SetCatmullRom(0,0)
 
-
-//pathplus.SetBezier()
+pathplus.SetPrecision(8)
+pathplus.SetBezier()
 //pathplus.BakeToPath()
+
 
 _guide = instance_create_layer(x,y,layer,guide)
 with _guide
@@ -42,3 +43,11 @@ LassoEnd(0)
 
 RemakeSelectablePoints()
 
+
+sprite = new PathPlusSprite(pathplus,sp_road,64) 
+
+sprite.AddThickness(0,0,0).AddThickness(.5,1,1).AddThickness(1,0,0).
+		AddColor(0,c_aqua).AddColor(.3,c_red).AddColor(.45,c_red,.25).AddColor(.7,c_teal,1).AddColor(1,c_aqua)
+sprite.RegenCache()
+
+frame = 0
