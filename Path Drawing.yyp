@@ -1,5 +1,5 @@
 {
-  "$GMProject":"",
+  "$GMProject":"v1",
   "%Name":"Path Drawing",
   "AudioGroups":[
     {"$GMAudioGroup":"","%Name":"audiogroup_default","name":"audiogroup_default","resourceType":"GMAudioGroup","resourceVersion":"2.0","targets":-1,},
@@ -74,6 +74,7 @@
     {"$GMFolder":"","%Name":"Tile Sets","folderPath":"folders/Tile Sets.yy","name":"Tile Sets","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Timelines","folderPath":"folders/Timelines.yy","name":"Timelines","resourceType":"GMFolder","resourceVersion":"2.0",},
   ],
+  "ForcedPrefabProjectReferences":[],
   "IncludedFiles":[
     {"$GMIncludedFile":"","%Name":"controllerblacklist.csv","CopyToMask":-1,"filePath":"datafiles","name":"controllerblacklist.csv","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"controllertypes.csv","CopyToMask":-1,"filePath":"datafiles","name":"controllertypes.csv","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
@@ -83,7 +84,7 @@
   "isEcma":false,
   "LibraryEmitters":[],
   "MetaData":{
-    "IDEVersion":"2024.11.0.179",
+    "IDEVersion":"2024.13.1.193",
   },
   "name":"Path Drawing",
   "resources":[
