@@ -1,5 +1,17 @@
 function PathPlusSprite (_pathplus,_sprite, _thickness = undefined) constructor
 {
+
+	static set_format =  function()
+	{
+		vertex_format_begin();
+		vertex_format_add_position();
+		vertex_format_add_colour();
+		vertex_format_add_texcoord();
+		v_format = vertex_format_end();
+	}
+
+	set_format()
+
 	sprite		= _sprite
 	pathplus	= _pathplus
 	base_width	= _thickness == undefined ? sprite_get_height(sprite) : _thickness
@@ -15,7 +27,7 @@ function PathPlusSprite (_pathplus,_sprite, _thickness = undefined) constructor
 					{name:"a" , type : animcurvetype_catmullrom , iterations : 8}
 					]
 	})
-	
+	v_buff = undefined
 	AddColor(0,c_white)
 	AddColor(1,c_white)
 	
@@ -51,10 +63,10 @@ function PathPlusSprite (_pathplus,_sprite, _thickness = undefined) constructor
 		_b	= animcurve_get_channel(nodes,"b").points,
 		_a	= animcurve_get_channel(nodes,"a").points
 
-		animcurve_point_add(_r,_n,_r2)
-		animcurve_point_add(_g,_n,_g2)
-		animcurve_point_add(_b,_n,_b2)
-		animcurve_point_add(_a,_n,_a2)
+		animcurve_point_add(_r,_n,_r2,true)
+		animcurve_point_add(_g,_n,_g2,true)
+		animcurve_point_add(_b,_n,_b2,true)
+		animcurve_point_add(_a,_n,_a2,true)
 		
 		animcurve_points_set(nodes,"r",_r)
 		animcurve_points_set(nodes,"g",_g)
@@ -112,27 +124,10 @@ function PathPlusSprite (_pathplus,_sprite, _thickness = undefined) constructor
 	static Draw = function(_subimg=0)
 	{
 		var 
-		sprite_pt= sprite_get_texture(sprite, _subimg) ,
-		repeatX = 1, repeatY = 1 ,
-		_l = array_length(cache)		
-
-		draw_primitive_begin_texture(pr_trianglestrip, sprite_pt);
-
-		for (var i = 0; i < _l; i++)
-		{
-			var 
-			curr = cache[i] ,
-			uv = curr.l / pathplus.pixel_length 
-		
-		    if tiled {uv *= spw}
-		    uv *= repeatX;
-
-		   draw_vertex_texture_colour(curr.x1, curr.y1, uv, repeatY, curr.color, curr.alpha);
-		   draw_vertex_texture_colour(curr.x2, curr.y2, uv, 0, curr.color, curr.alpha);
-		}
+		sprite_pt= sprite_get_texture(sprite, _subimg) 
 		
 		gpu_set_texrepeat(true);
-		draw_primitive_end();
+		vertex_submit(v_buff, pr_trianglelist, sprite_pt);
 		gpu_set_texrepeat(false);
 	}
 	
@@ -151,9 +146,13 @@ function PathPlusSprite (_pathplus,_sprite, _thickness = undefined) constructor
 			draw_line(next.x1, next.y1,curr.x1, curr.y1)
 		}
 	}
-	
+
 	static RegenCache = function(color=true, pos=true)
 	{
+		if buffer_exists(v_buff) {vertex_delete_buffer(v_buff) }
+
+		v_buff = vertex_create_buffer();
+
 		var _cache = pathplus.cache ,
 			_l = array_length(_cache)
 			
@@ -170,8 +169,43 @@ function PathPlusSprite (_pathplus,_sprite, _thickness = undefined) constructor
 		_w_n	= animcurve_get_channel(nodes,"w_n"),
 		_w_s	= animcurve_get_channel(nodes,"w_s")
 		
-		
-		for (var i = 0; i < _l; i++)
+		vertex_begin(v_buff, v_format);
+
+			var i = 0
+			var _n = _cache[i].l/pathplus.pixel_length ,
+			point = cache[i],
+			_ws,_wn ,
+			_color,_alpha
+			
+			if pos
+			{
+				_wn = animcurve_channel_evaluate(_w_n,_n)*(base_width*.5)
+				_ws = animcurve_channel_evaluate(_w_s,_n)*(base_width*.5)
+				
+				point.x2= lengthdir_x(_ws,_cache[i].normal)		+ _cache[i].x 
+				point.y2= lengthdir_y(_ws,_cache[i].normal)		+ _cache[i].y 
+				point.x1= lengthdir_x(_wn,_cache[i].normal-180)	+ _cache[i].x 
+				point.y1= lengthdir_y(_wn,_cache[i].normal-180)	+ _cache[i].y 
+			}
+			
+			if color
+			{
+				var __r = animcurve_channel_evaluate(_r,_n) ,
+					__g = animcurve_channel_evaluate(_g,_n) ,
+					__b = animcurve_channel_evaluate(_b,_n)
+				//_color = make_color_rgb(__r,__g	,__b)
+				_color = make_color_hsv(__r,__g	,__b)
+				_alpha = animcurve_channel_evaluate(_a,_n)
+				
+				point.alpha = _alpha
+				point.color = _color
+			}
+
+			point.l = _cache[i].l
+			cache[i] = point
+
+
+		for (var i = 1, flip = true; i < _l; i++)
 		{		
 			var _n = _cache[i].l/pathplus.pixel_length ,
 			point = cache[i],
@@ -203,19 +237,52 @@ function PathPlusSprite (_pathplus,_sprite, _thickness = undefined) constructor
 			}
 
 			point.l = _cache[i].l
-
 			cache[i] = point
+			
+			var u = cache[i].l / pathplus.pixel_length ,
+			prev_u = cache[i-1].l / pathplus.pixel_length
+		
+		    if tiled {
+				u *= spw
+				prev_u *= spw
+			}
+				// a
+				vertex_position(v_buff, cache[i-1].x2, cache[i-1].y2);
+				vertex_colour(v_buff, cache[i-1].color, cache[i-1].alpha);
+				vertex_texcoord(v_buff, prev_u, 0);
+				// b
+				vertex_position(v_buff, cache[i-1].x1, cache[i-1].y1);
+				vertex_colour(v_buff, cache[i-1].color, cache[i-1].alpha);
+				vertex_texcoord(v_buff, prev_u, 1);
+				// c
+				vertex_position(v_buff, cache[i].x1, cache[i].y1);
+				vertex_colour(v_buff, cache[i].color, cache[i].alpha);
+				vertex_texcoord(v_buff, u, 1);
+
+				// d
+				vertex_position(v_buff, cache[i].x2, cache[i].y2);
+				vertex_colour(v_buff, cache[i].color, cache[i].alpha);
+				vertex_texcoord(v_buff, u, 0);
+				// e
+				vertex_position(v_buff, cache[i].x1, cache[i].y1);
+				vertex_colour(v_buff, cache[i].color, cache[i].alpha);
+				vertex_texcoord(v_buff, u, 1);
+				// f
+				vertex_position(v_buff, cache[i-1].x2, cache[i-1].y2);
+				vertex_colour(v_buff, cache[i-1].color, cache[i-1].alpha);
+				vertex_texcoord(v_buff, prev_u, 0);
+
+
 		}
+		vertex_end(v_buff);
+		vertex_freeze(v_buff)
 	}
 	
+	static Delete = function()
+	{
+		vertex_format_delete(v_format)
+		if buffer_exists(v_buff) {vertex_delete_buffer(v_buff) }
+		animcurve_destroy(nodes)
+	}
 }
 
-
-/// @description             
-/// @param {Id.Instance}     
-/// @param {Asset.GMObject}  
-/// @return 
-function PathPlus_DrawSprite(pathplus,sprite,width)
-{
-
-}

@@ -74,6 +74,7 @@
     {"name":"Path2","order":1,"path":"paths/Path2/Path2.yy",},
     {"name":"Path3_1","order":4,"path":"paths/Path3_1/Path3_1.yy",},
     {"name":"Path3","order":3,"path":"paths/Path3/Path3.yy",},
+    {"name":"Path5","order":5,"path":"paths/Path5/Path5.yy",},
     {"name":"__input_axis_is_directional","order":9,"path":"scripts/__input_axis_is_directional/__input_axis_is_directional.yy",},
     {"name":"__input_binding_get_label","order":10,"path":"scripts/__input_binding_get_label/__input_binding_get_label.yy",},
     {"name":"__input_class_chord_definition","order":1,"path":"scripts/__input_class_chord_definition/__input_class_chord_definition.yy",},

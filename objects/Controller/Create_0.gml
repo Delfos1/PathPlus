@@ -1,19 +1,19 @@
 // Transforms a path into a PathPlus with Catmull-Rom interpolation
 
-pathplus = new PathPlus(Path2)
+pathplus = new PathPlus(Path3)
 //pathplus.SetCatmullRom(0,0)
 
-pathplus.SetPrecision(8)
-pathplus.SetBezier()
+pathplus.SetPrecision(4)
+//pathplus.SetBezier()
 //pathplus.BakeToPath()
-
-
+pathplus.GenerateCache()
+/*
 _guide = instance_create_layer(x,y,layer,guide)
 with _guide
 {
 	follow = new PathPlusFollower(other.pathplus) 
 	follow.SetActionOnEnd(PP_FOLLOW.BOUNCE).SetSpeed(1,10)
-			}
+			}*/
 gpu_set_texfilter(true)
 gpu_set_tex_mip_filter(tf_anisotropic)
 
@@ -46,8 +46,8 @@ RemakeSelectablePoints()
 
 sprite = new PathPlusSprite(pathplus,sp_road,64) 
 
-sprite.AddThickness(0,0,0).AddThickness(.5,1,1).AddThickness(1,0,0).
-		AddColor(0,c_aqua).AddColor(.3,c_red).AddColor(.45,c_red,.25).AddColor(.7,c_teal,1).AddColor(1,c_aqua)
+//sprite.AddThickness(0,0,0).AddThickness(.5,1,1).AddThickness(1,0,0).
+//sprite.AddColor(0,c_aqua).AddColor(.05,c_red).AddColor(.45,c_white,1).AddColor(.95,c_teal,1).AddColor(1,c_aqua)
 sprite.RegenCache()
 
 frame = 0

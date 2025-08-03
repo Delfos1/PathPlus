@@ -99,6 +99,7 @@
     {"id":{"name":"Path2","path":"paths/Path2/Path2.yy",},},
     {"id":{"name":"Path3_1","path":"paths/Path3_1/Path3_1.yy",},},
     {"id":{"name":"Path3","path":"paths/Path3/Path3.yy",},},
+    {"id":{"name":"Path5","path":"paths/Path5/Path5.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"__input_axis_is_directional","path":"scripts/__input_axis_is_directional/__input_axis_is_directional.yy",},},
     {"id":{"name":"__input_binding_get_label","path":"scripts/__input_binding_get_label/__input_binding_get_label.yy",},},
