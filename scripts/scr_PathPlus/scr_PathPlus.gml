@@ -11,6 +11,10 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 	_cache_gen  =	false
 	_length_gen	=	false
 	_properties = {}
+	bbox_bottom = 0
+	bbox_top	= 0
+	bbox_left	= 0
+	bbox_right	= 0
 	
 	if is_handle(_path)
 	{
@@ -705,6 +709,142 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_point.l = pixel_length * _n
 		return _point
 	}
+		static SampleFromCacheExt = function(_n,_position,_angle,_speed)
+	{
+		if  !is_real(_n)
+		{
+			__pathplus_show_debug("▉╳▉ ✦PathPlus✦ Error ▉╳▉: Wrong type provided")
+			return self
+		}
+		
+		if !_cache_gen && PP_AUTO_GEN_CACHE GenerateCache()
+		
+		var _length = array_length(cache) ,
+		_l = pixel_length * _n ,
+		_t = 0 ,
+		_point = {}
+
+		var _min = 0,
+		_max	= _length-1,
+		_ind	= 0
+
+		// Search for closest point index that is lower than the target
+		while (_min < _max)
+		{
+			_ind = floor((_max + _min)/2);
+					
+			if _ind+1	== _length
+			break
+			//  If current point is equal to the value, or the value is between this and the next point
+			if  cache[_ind].l <= _l && cache[_ind+1].l > _l 
+			{
+				break
+			}
+			else if cache[_ind].l > _l
+			{
+				_max	= _ind;
+			} else _min = _ind+1;
+		}
+	
+		if cache[_ind].l == _l
+		{
+			if _position
+			{
+				_point.x = cache[_ind].x
+				_point.y =cache[_ind].y
+			}
+			if _angle
+			{
+				_point.transversal = cache[_ind].transversal
+				_point.normal = _point.transversal + 90
+			}
+			if _speed {	_point.speed = cache[_ind].speed}
+			_point.l = _l
+			return 
+		}
+		// Get the next point to establish a segment. If greater than the length of the array, wrap around
+		var _ind2 = (_ind + 1)%_length
+
+		// If the first point is 0, ignore its length. If the second point is 0, the path is closed
+		var _l = _ind==0 ? _l : _l - cache[_ind].l ,
+			_w = _ind==0 ? cache[_ind2].l : cache[_ind2].l -  cache[_ind].l;
+
+		// establish the percentage between the two points of the interval
+		if (_w != 0)
+		{
+			_t =  _w != 0 ? _l / _w : _l
+		}
+	
+		if _position
+		{
+			_point.x = lerp(cache[_ind].x,cache[_ind2].x,_t)
+			_point.y = lerp(cache[_ind].y,cache[_ind2].y,_t)
+		}
+		if _angle
+		{
+			_point.transversal = lerp_angle(cache[_ind].transversal,cache[_ind2].transversal,_t)
+			_point.normal = _point.transversal + 90
+		}
+		if _speed {	_point.speed = lerp(cache[_ind].speed,cache[_ind2].speed,_t)}
+			_point.l = pixel_length * _n
+		
+		return _point
+	}
+	/// Gets the bounding box of the path based on the path points alone.
+	/// @arg _padding Amount of pixels added to each side as padding.  DEFAULT: 0
+	/// @arg _from Start position on the path, from 0 to 1.  DEFAULT: 0
+	/// @arg _to End position on the path, from 0 to 1. DEFAULT: 1
+	static GetBbox = function(_padding=0,_from=0,_to=1)
+	{
+		var _path= type == PATHPLUS.LINEAR ? polyline : cache ,
+		_iprev , _i , _l_diff = 0  , _l = array_length(_path)
+	
+		_from	= floor(lerp(1,_l,_from))
+		_to		= floor(lerp(1,_l,_to))
+	
+		var _x_array , _x, _y_array , _y
+	
+		_x_array	= [0,0]
+		_x_array[0]	= _path[0].x
+		_x_array[1]	= _x_array[0]
+		for(var _i = 1 + _from ; _i<_to ; _i ++ )
+		{
+			_x = _path[_i].x
+		
+			if _x > _x_array[1]
+			{
+				_x_array[1] = _x
+			}
+			else if _x < _x_array[0]
+			{
+				_x_array[0] = _x
+			}
+		}
+	
+		_y_array	= [0,0]
+		_y_array[0]	= _path[0].y
+		_y_array[1]	= _y_array[0]
+		for(var _i = 1 + _from ; _i<_to ; _i ++ )
+		{
+			_y = _path[_i].y
+		
+			if _y > _y_array[1]
+			{
+				_y_array[1] = _y
+			}
+			else if _y < _y_array[0]
+			{
+				_y_array[0] = _y
+			}
+		}
+		bbox_bottom = _y_array[1]+_padding
+		bbox_top	= _y_array[0]-_padding
+		bbox_left	= _x_array[0]-_padding
+		bbox_right	= _x_array[1]+_padding
+		
+
+		return [bbox_left,bbox_top,bbox_right,bbox_bottom]
+	}
 	#endregion
 	
 	#region Path Wrappers
@@ -1153,9 +1293,34 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		return path
 	}
 	
+	static Export			= function(file=undefined)
+	{
+		file ??= get_save_filename("*.pp", "path");
+		if (file != "")
+		{	
+			if filename_ext(file) != ".pp"
+			{
+				file = filename_change_ext(file,".pp")
+			}
+			var	 _stringy = json_stringify(self , true, function(key,value)
+			{
+				if key == "path"
+				{
+					return undefined
+				}
+				return value
+			}
+				),
+			_buff = buffer_create(string_byte_length(_stringy), buffer_fixed, 1);
+	
+			buffer_write(_buff, buffer_text, _stringy);
+			buffer_save(_buff, file);
+			buffer_delete(_buff);
+		}
+}
 	/// Export a .yy file with the contents of the cache polyline. You need to overwrite an existing path in your GameMaker project for it to work.
 	/// Recommended that you simplify the result before exporting to avoid redundant information
-	static Export			= function()
+	static ExportToYY		= function()
 	{
 
 	show_message("Warning : You must replace an already existing path in your Game Maker project")
@@ -1181,6 +1346,49 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		buffer_delete(_buff);
 	}
 }
+	
+	static Import			= function(file)
+	{
+			if filename_ext(file) != ".pp"	
+	{
+		__pathplus_show_debug("Path wasn't imported (Wrong type provided)")
+		return
+	}
+	
+	if !file_exists(file)
+	{
+		__pathplus_show_debug("System wasn't imported (File not found)")
+		return
+	}
+	
+	var _buffer = buffer_load(file)
+		buffer_seek(_buffer, buffer_seek_start, 0);
+	var _string = buffer_read(_buffer, buffer_string) ,
+		_parsed = json_parse(_string) 
+		buffer_delete(_buffer)
+
+		if _parsed != ""
+		{
+			cache		=	_parsed.cache
+			_cache_gen  =	_parsed._cache_gen
+			_length_gen	=	_parsed._length_gen
+			_properties =	_parsed._properties
+			bbox_bottom =	_parsed.bbox_bottom
+			bbox_top	=	_parsed.bbox_top
+			bbox_left	=	_parsed.bbox_left
+			bbox_right	=	_parsed.bbox_right
+			polyline	=	_parsed.polyline
+			precision	=	_parsed.precision
+			closed		=	_parsed.closed
+			type		=	_parsed.type
+			l			=	_parsed.l
+			pixel_length=	_parsed.pixel_length
+			BakeToPath()
+		}
+		
+		return
+
+	}
 	#endregion
 
 	static _regen			= function()
@@ -1227,6 +1435,13 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 		_length_gen = false
 	}
 	
+	static Destroy			=function()
+	{
+		if path_exists(path)
+		{
+			path_delete(path)
+		}
+	}
 	/// Draws either a path, a polyline or its cached version.
 	/// @param {Real}   _x		Drawing offset
 	/// @param {Real}   _y		Drawing offset
