@@ -1140,6 +1140,7 @@ function PathPlus(_path = undefined , auto_gen = true) constructor
 							}
 					break;
 				}
+				
 
 				if polyline[_i][$ "speed"] != undefined && polyline[(_i+1)%l][$ "speed"] != undefined 
 				{
