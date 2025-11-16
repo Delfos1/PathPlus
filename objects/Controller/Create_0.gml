@@ -44,7 +44,7 @@ LassoEnd(0)
 RemakeSelectablePoints()
 
 
-sprite = new PathPlusSprite(pathplus,sp_road,64) 
+sprite = new PathPlusSpriter(pathplus,sp_road,64) 
 
 //sprite.AddThickness(0,0,0).AddThickness(.5,1,1).AddThickness(1,0,0).
 //sprite.AddColor(0,c_aqua).AddColor(.05,c_red).AddColor(.45,c_white,1).AddColor(.95,c_teal,1).AddColor(1,c_aqua)

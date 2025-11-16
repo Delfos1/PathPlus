@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_PathPlus_Sprite",
   "parent":{
-    "name":"PathPlus Sprite",
-    "path":"folders/PathPlus Sprite.yy",
+    "name":"PathPlus Spriter",
+    "path":"folders/PathPlus Spriter.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

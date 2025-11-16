@@ -1,6 +1,6 @@
-#macro PP_SPRITE_VERSION "0.1"
-__pathplus_show_debug($"▉✦✧✦ Using PathPlus Sprite v {PP_SPRITE_VERSION} - by Delfos ✦✧✦▉")
-function PathPlusSprite (_pathplus,_sprite, _thickness = undefined) constructor
+#macro PP_SPRITER_VERSION "0.1"
+__pathplus_show_debug($"▉✦✧✦ Using PathPlus Sprite v {PP_SPRITER_VERSION} - by Delfos ✦✧✦▉")
+function PathPlusSpriter (_pathplus,_sprite, _thickness = undefined) constructor
 {
 
 	static set_format =  function()
