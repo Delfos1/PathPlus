@@ -1,7 +1,9 @@
-pathplus.DebugDraw(0,0,true)
 
+//pathplus.DebugDraw(0,0,true)
 LassoDraw()
 
+sprite.Draw(floor(frame))
+sprite.DebugDraw()
 
 for(var _i2=0 ;_i2<array_length(points_selectable) ;  _i2++)
 	{

@@ -1,6 +1,7 @@
 var _selected_l =  array_length(points_selected),
 	_add_to_sel	=	false
 
+frame = (frame+.2)%4
 // if mouse is not in the process of dragging an element or Lassoing a selection, check for collisions
 if mouse_mode!= MOUSE_MODE.DRAG &&  mouse_mode!= MOUSE_MODE.LASSO && mouse_mode!= MOUSE_MODE.ADD
 {	
@@ -84,6 +85,7 @@ if input_check_double_pressed("left_click")
 		{
 			pathplus.InsertPoint(ceil(hovered_on/pathplus.precision),mouse_x,mouse_y)
 			RemakeSelectablePoints()
+			sprite.RegenCache()
 			hovered_on = undefined
 		}
 	}
@@ -91,6 +93,7 @@ if input_check_double_pressed("left_click")
 	{
 		pathplus.AddPoint(mouse_x,mouse_y)
 		RemakeSelectablePoints()
+		sprite.RegenCache()
 	}
 }
 
@@ -146,6 +149,7 @@ if input_check("left_click")
 			var _handle = points_selected[0][1]
 			pathplus.TranslateBezierHandle(points_selected[0][0],_dx,_dy,_handle,_break,_sym)
 			RemakeSelectablePoints()
+			sprite.RegenCache()
 		}
 		else
 		{
@@ -153,6 +157,7 @@ if input_check("left_click")
 			{
 				 pathplus.TranslatePoint(points_selected[_i],_dx,_dy)
 				 RemakeSelectablePoints()
+				 sprite.RegenCache()
 			}
 		}
 	}
@@ -197,6 +202,7 @@ if input_check_pressed("del")
 		points_selected = []
 		//Regenerate the possible selectable points
 		RemakeSelectablePoints()
+		sprite.RegenCache()
 	}		
 }
 

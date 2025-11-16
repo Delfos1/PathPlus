@@ -1,8 +1,8 @@
 {
-  "$GMProject":"",
+  "$GMProject":"v1",
   "%Name":"Path Drawing",
   "AudioGroups":[
-    {"$GMAudioGroup":"","%Name":"audiogroup_default","name":"audiogroup_default","resourceType":"GMAudioGroup","resourceVersion":"2.0","targets":-1,},
+    {"$GMAudioGroup":"v1","%Name":"audiogroup_default","exportDir":"","name":"audiogroup_default","resourceType":"GMAudioGroup","resourceVersion":"2.0","targets":-1,},
   ],
   "configs":{
     "children":[],
@@ -54,6 +54,8 @@
     {"$GMFolder":"","%Name":"Notes","folderPath":"folders/Notes.yy","name":"Notes","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Objects","folderPath":"folders/Objects.yy","name":"Objects","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Particle Systems","folderPath":"folders/Particle Systems.yy","name":"Particle Systems","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"PathPlus Follower","folderPath":"folders/PathPlus Follower.yy","name":"PathPlus Follower","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"PathPlus Spriter","folderPath":"folders/PathPlus Spriter.yy","name":"PathPlus Spriter","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"PathPlus","folderPath":"folders/PathPlus.yy","name":"PathPlus","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Dependencies","folderPath":"folders/PathPlus/Dependencies.yy","name":"Dependencies","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Animcurve","folderPath":"folders/PathPlus/Dependencies/Animcurve.yy","name":"Animcurve","resourceType":"GMFolder","resourceVersion":"2.0",},
@@ -74,6 +76,7 @@
     {"$GMFolder":"","%Name":"Tile Sets","folderPath":"folders/Tile Sets.yy","name":"Tile Sets","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Timelines","folderPath":"folders/Timelines.yy","name":"Timelines","resourceType":"GMFolder","resourceVersion":"2.0",},
   ],
+  "ForcedPrefabProjectReferences":[],
   "IncludedFiles":[
     {"$GMIncludedFile":"","%Name":"controllerblacklist.csv","CopyToMask":-1,"filePath":"datafiles","name":"controllerblacklist.csv","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"controllertypes.csv","CopyToMask":-1,"filePath":"datafiles","name":"controllertypes.csv","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
@@ -83,7 +86,7 @@
   "isEcma":false,
   "LibraryEmitters":[],
   "MetaData":{
-    "IDEVersion":"2024.11.0.179",
+    "IDEVersion":"2024.14.0.207",
   },
   "name":"Path Drawing",
   "resources":[
@@ -98,6 +101,7 @@
     {"id":{"name":"Path2","path":"paths/Path2/Path2.yy",},},
     {"id":{"name":"Path3_1","path":"paths/Path3_1/Path3_1.yy",},},
     {"id":{"name":"Path3","path":"paths/Path3/Path3.yy",},},
+    {"id":{"name":"Path5","path":"paths/Path5/Path5.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"__input_axis_is_directional","path":"scripts/__input_axis_is_directional/__input_axis_is_directional.yy",},},
     {"id":{"name":"__input_binding_get_label","path":"scripts/__input_binding_get_label/__input_binding_get_label.yy",},},
@@ -440,14 +444,17 @@
     {"id":{"name":"scr_Lasso_Selection","path":"scripts/scr_Lasso_Selection/scr_Lasso_Selection.yy",},},
     {"id":{"name":"Scr_PathPlus_Config","path":"scripts/Scr_PathPlus_Config/Scr_PathPlus_Config.yy",},},
     {"id":{"name":"scr_PathPlus_Follower","path":"scripts/scr_PathPlus_Follower/scr_PathPlus_Follower.yy",},},
+    {"id":{"name":"scr_PathPlus_Sprite","path":"scripts/scr_PathPlus_Sprite/scr_PathPlus_Sprite.yy",},},
     {"id":{"name":"scr_PathPlus","path":"scripts/scr_PathPlus/scr_PathPlus.yy",},},
     {"id":{"name":"scr_point_in_polygon","path":"scripts/scr_point_in_polygon/scr_point_in_polygon.yy",},},
     {"id":{"name":"scr_record_path","path":"scripts/scr_record_path/scr_record_path.yy",},},
     {"id":{"name":"scr_selectable_points","path":"scripts/scr_selectable_points/scr_selectable_points.yy",},},
+    {"id":{"name":"Script348","path":"scripts/Script348/Script348.yy",},},
     {"id":{"name":"TGM_Math","path":"scripts/TGM_Math/TGM_Math.yy",},},
     {"id":{"name":"TGM_Paths","path":"scripts/TGM_Paths/TGM_Paths.yy",},},
     {"id":{"name":"dotted_line","path":"sprites/dotted_line/dotted_line.yy",},},
     {"id":{"name":"moon","path":"sprites/moon/moon.yy",},},
+    {"id":{"name":"sp_road","path":"sprites/sp_road/sp_road.yy",},},
     {"id":{"name":"spr_hand_closed_ol","path":"sprites/spr_hand_closed_ol/spr_hand_closed_ol.yy",},},
     {"id":{"name":"spr_hand_open_ol","path":"sprites/spr_hand_open_ol/spr_hand_open_ol.yy",},},
     {"id":{"name":"spr_hand_point_ol","path":"sprites/spr_hand_point_ol/spr_hand_point_ol.yy",},},

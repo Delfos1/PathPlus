@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_PathPlus_Follower",
   "parent":{
-    "name":"PathPlus",
-    "path":"folders/PathPlus.yy",
+    "name":"PathPlus Follower",
+    "path":"folders/PathPlus Follower.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
