@@ -17,7 +17,7 @@ else if trigger
 	{
 		if _guide == undefined
 		{
-			_guide = instance_create_layer(x,y,layer,guide)
+			_guide = instance_create_layer(x,y,layer,o_Follower)
 			with _guide
 			{
 				follow = new PathPlusFollower(other.pathplus) 

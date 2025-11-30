@@ -2,9 +2,11 @@
 //pathplus.DebugDraw(0,0,true)
 LassoDraw()
 
+// Draw the Spriter
 sprite.Draw(floor(frame))
 sprite.DebugDraw()
 
+#region point editor stuff
 for(var _i2=0 ;_i2<array_length(points_selectable) ;  _i2++)
 	{
 		var _color = PP_COLOR_PT
@@ -31,3 +33,4 @@ if closest != undefined
 
 draw_sprite(mouse_sprite,0,mouse_x,mouse_y)
 
+#endregion
