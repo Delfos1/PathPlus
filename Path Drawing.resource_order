@@ -379,6 +379,7 @@
     {"name":"TGM_Paths","order":14,"path":"scripts/TGM_Paths/TGM_Paths.yy",},
     {"name":"dotted_line","order":3,"path":"sprites/dotted_line/dotted_line.yy",},
     {"name":"moon","order":4,"path":"sprites/moon/moon.yy",},
+    {"name":"PathPlusBG","order":9,"path":"sprites/PathPlusBG/PathPlusBG.yy",},
     {"name":"sp_road","order":6,"path":"sprites/sp_road/sp_road.yy",},
     {"name":"spr_hand_open_ol","order":1,"path":"sprites/spr_hand_open_ol/spr_hand_open_ol.yy",},
     {"name":"spr_hand_point_ol","order":2,"path":"sprites/spr_hand_point_ol/spr_hand_point_ol.yy",},

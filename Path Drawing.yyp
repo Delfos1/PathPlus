@@ -448,6 +448,7 @@
     {"id":{"name":"TGM_Paths","path":"scripts/TGM_Paths/TGM_Paths.yy",},},
     {"id":{"name":"dotted_line","path":"sprites/dotted_line/dotted_line.yy",},},
     {"id":{"name":"moon","path":"sprites/moon/moon.yy",},},
+    {"id":{"name":"PathPlusBG","path":"sprites/PathPlusBG/PathPlusBG.yy",},},
     {"id":{"name":"sp_road","path":"sprites/sp_road/sp_road.yy",},},
     {"id":{"name":"spr_hand_closed_ol","path":"sprites/spr_hand_closed_ol/spr_hand_closed_ol.yy",},},
     {"id":{"name":"spr_hand_open_ol","path":"sprites/spr_hand_open_ol/spr_hand_open_ol.yy",},},
@@ -516,8 +517,8 @@
   "resourceType":"GMProject",
   "resourceVersion":"2.0",
   "RoomOrderNodes":[
-    {"roomId":{"name":"R_Demo_Objects","path":"rooms/R_Demo_Objects/R_Demo_Objects.yy",},},
     {"roomId":{"name":"R_Path_Recording_Demo","path":"rooms/R_Path_Recording_Demo/R_Path_Recording_Demo.yy",},},
+    {"roomId":{"name":"R_Demo_Objects","path":"rooms/R_Demo_Objects/R_Demo_Objects.yy",},},
   ],
   "templateType":"game",
   "TextureGroups":[
